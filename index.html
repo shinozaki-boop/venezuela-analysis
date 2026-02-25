@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ベネズエラ：住民参加と支配構造</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d0f;
+    --surface: #13151a;
+    --surface2: #1c1f27;
+    --border: #2a2e38;
+    --red: #c0392b;
+    --red-dim: #7d1f16;
+    --amber: #d4892a;
+    --amber-dim: #7a4d10;
+    --blue: #2c6fad;
+    --blue-dim: #1a3f63;
+    --green: #27795b;
+    --green-dim: #144030;
+    --text: #ddd8cf;
+    --text-dim: #7a7670;
+    --text-muted: #4a4844;
+    --chavez: #c0392b;
+    --maduro: #1a3a5c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 300;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ───────────────────────────── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 40px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      -45deg, transparent, transparent 40px,
+      rgba(192,57,43,0.03) 40px, rgba(192,57,43,0.03) 41px
+    );
+  }
+  .header-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: #f0ece4;
+    position: relative;
+  }
+  header h1 span {
+    color: var(--red);
+  }
+  .header-sub {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--text-dim);
+    font-style: italic;
+    max-width: 700px;
+    position: relative;
+  }
+  .era-badges {
+    display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;
+    position: relative;
+  }
+  .era-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+  .era-badge.chavez { background: var(--red); color: #fff; }
+  .era-badge.maduro { background: var(--blue); color: #c8daea; }
+  .era-badge.note { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+
+  /* ── LAYOUT ───────────────────────────── */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── SECTION TITLE ────────────────────── */
+  .section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── IDEOLOGY BOX ─────────────────────── */
+  .ideology-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-bottom: 48px;
+    border: 1px solid var(--border);
+  }
+  .ideology-card {
+    padding: 28px 28px 24px;
+    position: relative;
+  }
+  .ideology-card.chavez-card { background: #160d0c; }
+  .ideology-card.maduro-card { background: #0b1320; }
+  .ideology-card .era-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .ideology-card.chavez-card .era-name { color: #e05545; }
+  .ideology-card.maduro-card .era-name { color: #4d8cc0; }
+  .ideology-card .era-years {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .ideology-card .ideology-desc {
+    font-size: 13.5px;
+    color: #a09a92;
+    line-height: 1.75;
+  }
+  .ideology-card .ideology-slogan {
+    margin-top: 14px;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text-dim);
+    border-left: 2px solid var(--border);
+    padding-left: 12px;
+  }
+
+  /* ── PARTICIPATION LAYER ──────────────── */
+  .layer-section { margin-bottom: 56px; }
+
+  .flow-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+  }
+
+  /* Central power node */
+  .power-node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 32px;
+  }
+  .power-box {
+    background: var(--red);
+    color: #fff;
+    padding: 16px 36px;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    position: relative;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .power-box.maduro-box { background: var(--blue); }
+
+  /* Arrow down */
+  .arrow-down {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 24px;
+    color: var(--text-muted);
+    font-size: 22px;
+    letter-spacing: -4px;
+  }
+  .arrow-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: -16px;
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Mechanism grid */
+  .mechanism-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2px;
+    margin-bottom: 24px;
+  }
+  .mech-card {
+    background: var(--surface2);
+    padding: 18px 16px;
+    border-top: 3px solid var(--border);
+    transition: border-color .2s;
+    cursor: default;
+  }
+  .mech-card:hover { border-top-color: var(--red); }
+  .mech-card.maduro-mech:hover { border-top-color: var(--blue); }
+  .mech-card .mech-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 6px;
+    letter-spacing: .5px;
+  }
+  .mech-card.maduro-mech .mech-name { color: #4d8cc0; }
+  .mech-card .mech-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #ccc8c0;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .mech-card .mech-desc {
+    font-size: 12px;
+    color: #706a62;
+    line-height: 1.6;
+  }
+
+  /* ── DUAL-USE BOX ─────────────────────── */
+  .dual-section { margin-bottom: 56px; }
+
+  .dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    align-items: stretch;
+  }
+  .dual-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+  .dual-col.participation { border-right: none; }
+  .dual-col.control { border-left: none; }
+  .dual-divider {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .dual-col-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dual-col.participation .dual-col-title { color: #4ade80; }
+  .dual-col.control .dual-col-title { color: var(--red); }
+
+  .dual-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .dual-item .di-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    margin-top: 2px;
+  }
+  .dual-col.participation .di-icon { background: #14532d; color: #4ade80; }
+  .dual-col.control .di-icon { background: var(--red-dim); color: #f87171; }
+  .dual-item .di-text {
+    font-size: 13px;
+    color: #a09a92;
+    line-height: 1.6;
+  }
+  .dual-item .di-text strong { color: var(--text); }
+
+  /* ── COMPARISON TABLE ─────────────────── */
+  .compare-section { margin-bottom: 56px; }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .compare-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .compare-table th:nth-child(1) { color: var(--text-dim); width: 22%; }
+  .compare-table th:nth-child(2) { color: #e05545; width: 39%; background: rgba(192,57,43,.07); }
+  .compare-table th:nth-child(3) { color: #4d8cc0; width: 39%; background: rgba(44,111,173,.07); }
+  .compare-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: #a09a92;
+    line-height: 1.6;
+  }
+  .compare-table td:nth-child(2) { background: rgba(192,57,43,.04); }
+  .compare-table td:nth-child(3) { background: rgba(44,111,173,.04); }
+  .compare-table td:nth-child(1) {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 700;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  /* ── PYRAMID DIAGRAM ──────────────────── */
+  .pyramid-section { margin-bottom: 56px; }
+  .pyramid-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .pyramid-level {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 2px;
+    position: relative;
+  }
+  .pyramid-bar {
+    height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 12px 100%);
+  }
+  .pyramid-bar-label {
+    margin-left: 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .pyr-l1 { width: 28%; background: #7d1f16; }
+  .pyr-l2 { width: 45%; background: #a62417; }
+  .pyr-l3 { width: 62%; background: #b8341e; }
+  .pyr-l4 { width: 78%; background: #c94228; }
+  .pyr-l5 { width: 94%; background: #d95535; }
+  .pyramid-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    max-width: 600px;
+  }
+
+  /* ── CONTROL MECHANISMS (Maduro) ──────── */
+  .control-chain {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 24px;
+  }
+  .chain-node {
+    background: var(--surface2);
+    border-left: 3px solid var(--blue);
+    padding: 14px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .chain-node.highlight-node { background: #0d1a2a; border-left-color: #e05545; }
+  .chain-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--blue);
+    flex-shrink: 0;
+    line-height: 1;
+    width: 30px;
+  }
+  .chain-node.highlight-node .chain-num { color: #e05545; }
+  .chain-content .chain-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ccc8c0;
+    margin-bottom: 4px;
+  }
+  .chain-content .chain-desc {
+    font-size: 12.5px;
+    color: #706a62;
+    line-height: 1.65;
+  }
+  .chain-arrow {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 18px;
+    padding: 4px 0;
+  }
+
+  /* ── FOOTER ───────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 28px 40px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    letter-spacing: .5px;
+  }
+  footer span { color: var(--text-dim); }
+
+  /* ── RESPONSIVE ───────────────────────── */
+  @media (max-width: 700px) {
+    .ideology-grid { grid-template-columns: 1fr; }
+    .dual-grid { grid-template-columns: 1fr; }
+    .dual-divider { writing-mode: horizontal-tb; height: 32px; width: 100%; border: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .dual-col.participation { border-right: 1px solid var(--border); }
+    .dual-col.control { border-left: 1px solid var(--border); }
+    header { padding: 32px 20px 24px; }
+    .container { padding: 24px 16px 60px; }
+    footer { padding: 20px; }
+  }
+
+  /* ── ANIMATE ──────────────────────────── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeIn .5s ease forwards;
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; transform: none; }
+  }
+  .mech-card { animation: fadeIn .4s ease forwards; }
+  .mech-card:nth-child(1) { animation-delay: .05s; }
+  .mech-card:nth-child(2) { animation-delay: .10s; }
+  .mech-card:nth-child(3) { animation-delay: .15s; }
+  .mech-card:nth-child(4) { animation-delay: .20s; }
+  .mech-card:nth-child(5) { animation-delay: .25s; }
+  .mech-card:nth-child(6) { animation-delay: .30s; }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 6px;
+  }
+  .tag.legitimate { background: #14532d; color: #4ade80; }
+  .tag.ambiguous  { background: #713f12; color: #fbbf24; }
+  .tag.repressive { background: var(--red-dim); color: #f87171; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<header>
+  <div class="header-label">政治構造分析 / Political Structure Analysis</div>
+  <h1>ベネズエラ：<span>住民参加</span>と支配構造</h1>
+  <p class="header-sub">
+    チャベス・マドゥロ両政権期における「参加型民主主義」の制度設計と、
+    それが権力維持装置へと変容するメカニズムの図式的分析
+  </p>
+  <div class="era-badges">
+    <span class="era-badge chavez">チャベス期 1999–2013</span>
+    <span class="era-badge maduro">マドゥロ期 2013–現在</span>
+    <span class="era-badge note">※ モック・学術分析用途</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ═══════ 1. 両政権の思想的基盤 ═══════ -->
+  <div class="section-title">01 &mdash; 思想的基盤</div>
+  <div class="ideology-grid fade-in" style="animation-delay:.1s">
+    <div class="ideology-card chavez-card">
+      <div class="era-name">Hugo Chávez</div>
+      <div class="era-years">1999 — 2013</div>
+      <div class="ideology-desc">
+        「ボリバル革命」を掲げ、19世紀の独立英雄シモン・ボリバルの理念を現代に再解釈。
+        新自由主義・米国帝国主義への対抗として<strong>「21世紀の社会主義（Socialismo del Siglo XXI）」</strong>を提唱。
+        石油収入を財源とするミッション制度で大衆の直接支持を組織化した。
+        参加型民主主義は、旧来のエリート政党（AD・COPEI）を解体する正統性の根拠として機能した。
+      </div>
+      <div class="ideology-slogan">
+        "Con Chávez manda el pueblo" —— 「チャベスとともに、人民が統治する」
+      </div>
+    </div>
+    <div class="ideology-card maduro-card">
+      <div class="era-name">Nicolás Maduro</div>
+      <div class="era-years">2013 — 現在</div>
+      <div class="ideology-desc">
+        チャベスの「精神的後継者」を自称するが、石油価格暴落・経済崩壊という文脈で政権を引き継ぐ。
+        参加型制度の<strong>「形式的存続・実質的変質」</strong>が進行。
+        食料配給（CLAP）・民兵（コレクティボス）・制憲議会を通じて、参加の概念を
+        恩顧主義と監視の道具へと転換させた。
+      </div>
+      <div class="ideology-slogan">
+        "Chávez vive, la lucha sigue" —— 「チャベスは生きている、闘争は続く」
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 2. チャベス期の参加装置 ═══════ -->
+  <div class="layer-section fade-in" style="animation-delay:.2s">
+    <div class="section-title">02 &mdash; チャベス期：参加型制度の設計（1999–2013）</div>
+    <div class="flow-diagram">
+      <div class="power-node">
+        <div class="power-box">大統領府 / PSUV党 —— 石油収入（PDVSA）</div>
+      </div>
+      <div class="arrow-down">↓↓↓</div>
+      <div class="arrow-label">資源・権限・正統性の垂直配分</div>
+      <div class="mechanism-grid">
+        <div class="mech-card">
+          <span class="tag legitimate">参加的</span>
+          <div class="mech-name">CONSEJOS COMUNALES</div>
+          <div class="mech-title">コムナル評議会（2006–）</div>
+          <div class="mech-desc">
+            200〜400世帯単位で組織される住民自治体。議会・地方政府を迂回し
+            大統領府から直接資金を受領。名目上は住民による直接民主主義の実践単位。
+          </div>
+        </div>
+        <div class="mech-card">
+          <span class="tag legitimate">参加的</span>
+          <div class="mech-name">MISIONES SOCIALES</div>
+          <div class="mech-title">社会ミッション群（2003–）</div>
+          <div class="mech-desc">
+            識字（ミシオン・ロビンソン）、医療（バリオ・アデントロ）、食料（メルカル）など。
+            省庁を迂回して大統領直轄で展開。社会サービスと政治動員を一体化。
+          </div>
+        </div>
+        <div class="mech-card">
+          <span class="tag ambiguous">両義的</span>
+          <div class="mech-name">PSUV / UBEs</div>
+          <div class="mech-title">党基礎ユニット（2007–）</div>
+          <div class="mech-desc">
+            統一社会主義党の末端細胞。街区・職場単位で組織化。
+            選挙動員・世論把握と、住民間の政治的コントロールの双方を担う。
+          </div>
+        </div>
+        <div class="mech-card">
+          <span class="tag ambiguous">両義的</span>
+          <div class="mech-name">FONDEN</div>
+          <div class="mech-title">国家開発基金（2005–）</div>
+          <div class="mech-desc">
+            石油収入の一部を議会審査なく大統領府管轄の「オフ・バジェット」基金へ。
+            ミッション財源として大量動員を可能にしたが、透明性ゼロ。
+          </div>
+        </div>
+        <div class="mech-card">
+          <span class="tag ambiguous">両義的</span>
+          <div class="mech-name">MILICIAS BOLIVARIANAS</div>
+          <div class="mech-title">ボリバル民兵（2008–）</div>
+          <div class="mech-desc">
+            正規軍と並立する市民武装組織。参加型防衛の名目だが、
+            チャベス支持者による武装勢力として国内政治圧力にも機能。
+          </div>
+        </div>
+        <div class="mech-card">
+          <span class="tag legitimate">参加的</span>
+          <div class="mech-name">CONSTITUCIÓN 1999</div>
+          <div class="mech-title">1999年憲法</div>
+          <div class="mech-desc">
+            直接民主主義・住民参加を多数条文で明記。リコール制度・住民立法など。
+            しかし制度的独立性（司法・選挙委員会）は政権与党の支配下に置かれた。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 3. 参加と統制の両義性 ═══════ -->
+  <div class="dual-section fade-in" style="animation-delay:.25s">
+    <div class="section-title">03 &mdash; 制度の「両面性」：住民参加 vs. 支配装置</div>
+    <div class="dual-grid">
+      <div class="dual-col participation">
+        <div class="dual-col-title">▲ 住民参加の側面</div>
+        <div class="dual-item">
+          <div class="di-icon">✓</div>
+          <div class="di-text"><strong>排除されていた層の包摂：</strong>貧困層・先住民・女性が初めて政治主体として制度に組み込まれた</div>
+        </div>
+        <div class="dual-item">
+          <div class="di-icon">✓</div>
+          <div class="di-text"><strong>サービス実績：</strong>識字率向上・乳幼児死亡率低下・貧困率減少が実測された（2000年代）</div>
+        </div>
+        <div class="dual-item">
+          <div class="di-icon">✓</div>
+          <div class="di-text"><strong>直接的意思決定：</strong>コムナル評議会での予算審議は、形式上は住民総会で実施</div>
+        </div>
+        <div class="dual-item">
+          <div class="di-icon">✓</div>
+          <div class="di-text"><strong>憲法的権利の拡充：</strong>社会権・参加権が1999年憲法に明記された</div>
+        </div>
+      </div>
+      <div class="dual-divider">転換 / Inversion</div>
+      <div class="dual-col control">
+        <div class="dual-col-title">▼ 支配構造の側面</div>
+        <div class="dual-item">
+          <div class="di-icon">✗</div>
+          <div class="di-text"><strong>恩顧主義の制度化：</strong>サービス受給が政治的忠誠と連動。反対者はリストから排除（リスタ・タスコン問題）</div>
+        </div>
+        <div class="dual-item">
+          <div class="di-icon">✗</div>
+          <div class="di-text"><strong>水平的制度の空洞化：</strong>議会・司法・地方政府を迂回することで牽制機能が解体</div>
+        </div>
+        <div class="dual-item">
+          <div class="di-icon">✗</div>
+          <div class="di-text"><strong>垂直統合：</strong>コムナル評議会は形式的住民自治だが、資金源・人事・議題設定は党中央が支配</div>
+        </div>
+        <div class="dual-item">
+          <div class="di-icon">✗</div>
+          <div class="di-text"><strong>監視と分断：</strong>街区単位の党組織が住民の政治行動を把握。反対者への社会的圧力を可能にした</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 4. マドゥロ期の変質 ═══════ -->
+  <div class="layer-section fade-in" style="animation-delay:.3s">
+    <div class="section-title">04 &mdash; マドゥロ期：統制への傾斜（2013–現在）</div>
+    <div class="flow-diagram">
+      <div class="power-node">
+        <div class="power-box maduro-box">大統領府 —— FANB（軍）—— コレクティボス（民兵）</div>
+      </div>
+      <div class="arrow-down">↓↓↓</div>
+      <div class="arrow-label">食料・暴力・情報を通じた統制</div>
+      <div class="mechanism-grid">
+        <div class="mech-card maduro-mech">
+          <span class="tag repressive">統制的</span>
+          <div class="mech-name">CLAP</div>
+          <div class="mech-title">食料配給委員会（2016–）</div>
+          <div class="mech-desc">
+            食料不足の中、月1回の食料箱配給を党登録者優先で実施。
+            「食べるために党員でいる」状況を創出。最も直接的な生存依存型統制。
+          </div>
+        </div>
+        <div class="mech-card maduro-mech">
+          <span class="tag repressive">統制的</span>
+          <div class="mech-name">COLECTIVOS</div>
+          <div class="mech-title">武装コレクティボス</div>
+          <div class="mech-desc">
+            親政府の武装民間組織。反政府デモへの暴力的鎮圧・反対意見の住民への
+            圧力に使用。「公式には非公式」の暴力装置。
+          </div>
+        </div>
+        <div class="mech-card maduro-mech">
+          <span class="tag repressive">統制的</span>
+          <div class="mech-name">ASAMBLEA CONSTITUYENTE</div>
+          <div class="mech-title">制憲議会（2017–）</div>
+          <div class="mech-desc">
+            野党多数の国民議会を無力化するため召集。「人民参加」の名目だが、
+            議員は全員政権与党側から選出。憲法上の立法機関を事実上代替。
+          </div>
+        </div>
+        <div class="mech-card maduro-mech">
+          <span class="tag repressive">統制的</span>
+          <div class="mech-name">CARNET DE LA PATRIA</div>
+          <div class="mech-title">祖国カード（2017–）</div>
+          <div class="mech-desc">
+            政府サービス・補助金受給に必要なIDカード。所持者の行動・政治参加を
+            デジタルで追跡。中国の技術支援により構築された監視基盤。
+          </div>
+        </div>
+        <div class="mech-card maduro-mech">
+          <span class="tag ambiguous">両義的</span>
+          <div class="mech-name">COMUNAS</div>
+          <div class="mech-title">コムナ（コムナル評議会の上位）</div>
+          <div class="mech-desc">
+            複数評議会を統合した広域自治体。チャベスの「コムナル国家」構想の継続。
+            ただし独立性は低く、党の地域管理組織として機能。
+          </div>
+        </div>
+        <div class="mech-card maduro-mech">
+          <span class="tag repressive">統制的</span>
+          <div class="mech-name">SEBIN / DGCIM</div>
+          <div class="mech-title">情報機関による弾圧</div>
+          <div class="mech-desc">
+            国家情報局・対情報軍事局が反政府活動家・ジャーナリスト・軍人を拘束。
+            「参加」した反対者への制度的報復機能を担う。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 5. 支配構造の連鎖 ═══════ -->
+  <div class="layer-section fade-in" style="animation-delay:.32s">
+    <div class="section-title">05 &mdash; マドゥロ期：統制連鎖の構造</div>
+    <div class="control-chain">
+      <div class="chain-node">
+        <div class="chain-num">1</div>
+        <div class="chain-content">
+          <div class="chain-title">経済崩壊による依存の創出</div>
+          <div class="chain-desc">石油価格暴落（2014年）・経済制裁・政策失敗によるハイパーインフレ。国民が日常的生存を政府サービスに依存する状況を構造的に維持。</div>
+        </div>
+      </div>
+      <div class="chain-arrow">↓</div>
+      <div class="chain-node">
+        <div class="chain-num">2</div>
+        <div class="chain-content">
+          <div class="chain-title">CLAP食料箱による忠誠の購入</div>
+          <div class="chain-desc">月次の食料配給を党登録・政治行動と連動。「祖国カード」でスキャンされた受給者リストは政治的ふるい分けに使用可能。</div>
+        </div>
+      </div>
+      <div class="chain-arrow">↓</div>
+      <div class="chain-node">
+        <div class="chain-num">3</div>
+        <div class="chain-content">
+          <div class="chain-title">街区レベルの監視と社会的圧力</div>
+          <div class="chain-desc">コムナル評議会・PSUV基礎ユニットが住民の日常行動を把握。反対票・抗議参加は近隣コミュニティを通じて可視化される。</div>
+        </div>
+      </div>
+      <div class="chain-arrow">↓</div>
+      <div class="chain-node highlight-node">
+        <div class="chain-num">4</div>
+        <div class="chain-content">
+          <div class="chain-title">コレクティボスによる物理的威嚇</div>
+          <div class="chain-desc">抗議・組織活動に対し武装民間組織が介入。警察・軍との暗黙の分業体制により、国家は直接的弾圧の「距離」を保ちながら暴力を行使。</div>
+        </div>
+      </div>
+      <div class="chain-arrow">↓</div>
+      <div class="chain-node">
+        <div class="chain-num">5</div>
+        <div class="chain-content">
+          <div class="chain-title">制度的出口の封鎖</div>
+          <div class="chain-desc">選挙委員会（CNE）・最高裁（TSJ）・制憲議会が与党支配下に置かれ、選挙・司法による権力交代の経路が実質的に遮断される。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 6. 比較表 ═══════ -->
+  <div class="compare-section fade-in" style="animation-delay:.35s">
+    <div class="section-title">06 &mdash; チャベス vs. マドゥロ：参加型制度の変容</div>
+    <div style="overflow-x:auto">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>比較軸</th>
+          <th>チャベス期（1999–2013）</th>
+          <th>マドゥロ期（2013–現在）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>参加の動機</td>
+          <td>革命的熱狂・石油ブームによる利益分配への期待</td>
+          <td>生存への脅威（食料・医療・安全）による強制的参加</td>
+        </tr>
+        <tr>
+          <td>資源の源泉</td>
+          <td>石油高騰期の豊富なオイルマネー（FONDENを通じ）</td>
+          <td>希少化した食料・ドル・輸入品の配分権</td>
+        </tr>
+        <tr>
+          <td>統制の手段</td>
+          <td>恩顧主義・情報・社会的圧力（リスタ・タスコン）</td>
+          <td>食料依存（CLAP）・デジタル監視（祖国カード）・武力（コレクティボス）</td>
+        </tr>
+        <tr>
+          <td>制度の外観</td>
+          <td>参加型民主主義として国際的に議論・一部から称賛</td>
+          <td>外観は維持しつつ、実質的には権威主義体制として国際社会が認定</td>
+        </tr>
+        <tr>
+          <td>反対勢力への対応</td>
+          <td>排除・差別（リスタ掲載）・一部的な弾圧</td>
+          <td>投獄・拷問・亡命強制・選挙無効化などの組織的弾圧</td>
+        </tr>
+        <tr>
+          <td>軍との関係</td>
+          <td>政治的に中立化・制度統合</td>
+          <td>軍が経済利権（麻薬・食料輸入）を担い、政権の中核的支柱に</td>
+        </tr>
+        <tr>
+          <td>国際社会の評価</td>
+          <td>「選挙的権威主義」から「参加型民主主義」まで論争的</td>
+          <td>大多数の民主主義指標で「権威主義体制」と分類</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ═══════ 7. 権力ピラミッド ═══════ -->
+  <div class="pyramid-section fade-in" style="animation-delay:.4s">
+    <div class="section-title">07 &mdash; マドゥロ期の権力構造ピラミッド</div>
+    <div class="pyramid-wrap">
+      <div class="pyramid-level">
+        <div class="pyramid-bar pyr-l1" style="margin: 0 auto">大統領府・核心部</div>
+      </div>
+      <div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 2px 0">FANB軍幹部 / 情報機関 / 麻薬ルート利権グループ</div>
+      <div class="pyramid-level">
+        <div class="pyramid-bar pyr-l2" style="margin: 0 auto">PSUV党指導部 / 制憲議会</div>
+      </div>
+      <div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 2px 0">忠誠派テクノクラート / 国営企業経営陣</div>
+      <div class="pyramid-level">
+        <div class="pyramid-bar pyr-l3" style="margin: 0 auto">コレクティボス / CLAP配給委員会</div>
+      </div>
+      <div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 2px 0">街区レベルの監視・配給管理・動員装置</div>
+      <div class="pyramid-level">
+        <div class="pyramid-bar pyr-l4" style="margin: 0 auto">コムナル評議会 / PSUV基礎ユニット</div>
+      </div>
+      <div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 2px 0">住民の政治行動把握・社会圧力の末端実行</div>
+      <div class="pyramid-level">
+        <div class="pyramid-bar pyr-l5" style="margin: 0 auto">一般住民（祖国カード保持者）</div>
+      </div>
+      <div class="pyramid-note">
+        ※ 「住民参加」の制度は末端2層に集中するが、意思決定・資源配分は上位層が掌握。
+        形式的参加と実質的支配の乖離が構造的特徴。
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 8. 学術的解釈 ═══════ -->
+  <div class="fade-in" style="animation-delay:.45s">
+    <div class="section-title">08 &mdash; 主要な学術的解釈フレーム</div>
+    <div class="mechanism-grid">
+      <div class="mech-card" style="border-top-color: #4ade80">
+        <div class="mech-name" style="color:#4ade80">STEVEN LEVITSKY</div>
+        <div class="mech-title">「競争的権威主義」</div>
+        <div class="mech-desc">選挙・議会・裁判所といった民主制度が形式上は存在するが、権力者が不均等に優位を持つ体制。ベネズエラはその典型例として分析される。</div>
+      </div>
+      <div class="mech-card" style="border-top-color: #fbbf24">
+        <div class="mech-name" style="color:#fbbf24">KIRK HAWKINS</div>
+        <div class="mech-title">「ポピュリスト・リンケージ」</div>
+        <div class="mech-desc">チャベスは制度的媒介なしに指導者と大衆が直結する「プログラマティック外」の動員を行い、制度の空洞化と個人的忠誠の強化を同時に達成。</div>
+      </div>
+      <div class="mech-card" style="border-top-color: #60a5fa">
+        <div class="mech-name" style="color:#60a5fa">JUAN LINZ</div>
+        <div class="mech-title">「権威主義体制の類型論」</div>
+        <div class="mech-desc">マドゥロ期は「スルタン主義的権威主義」への傾斜として分析可能。個人的裁量・家産制的支配・恐怖と利益の混合による大衆コントロール。</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer>
+  <div>分析対象期間：<span>1999–2025年</span></div>
+  <div>分類：<span>比較政治学 / 権威主義研究 / ラテンアメリカ研究</span></div>
+  <div>参考：<span>World Bank / Freedom House / ENCOVI / Human Rights Watch / 学術文献</span></div>
+  <div>注記：<span>本図はモック・教育目的の分析用途。統計値は別途公式資料で確認のこと</span></div>
+</footer>
+
+</body>
+</html>
