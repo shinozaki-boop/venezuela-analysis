@@ -1,898 +1,1249 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベネズエラ：住民参加と支配構造</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0c0d0f;
-    --surface: #13151a;
-    --surface2: #1c1f27;
-    --border: #2a2e38;
-    --red: #c0392b;
-    --red-dim: #7d1f16;
-    --amber: #d4892a;
-    --amber-dim: #7a4d10;
-    --blue: #2c6fad;
-    --blue-dim: #1a3f63;
-    --green: #27795b;
-    --green-dim: #144030;
-    --text: #ddd8cf;
-    --text-dim: #7a7670;
-    --text-muted: #4a4844;
-    --chavez: #c0392b;
-    --maduro: #1a3a5c;
-  }
+import React, { useState, useMemo } from 'react';
+import { 
+  LineChart, Line, AreaChart, Area, BarChart, Bar, ScatterChart, Scatter, ZAxis, Cell,
+  ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+} from 'recharts';
+import { 
+  Info, BarChart3, TrendingUp, AlertTriangle, 
+  BookOpen, Layers, Droplets, Zap, ShieldCheck, Activity, Globe, Factory, Users, Network, DollarSign, Crosshair, ChevronDown
+} from 'lucide-react';
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+// --- データポイント定義 (既存の国別比較データ ＋ マレーシア追加) ---
+const jp_gdp_pts = [[1958, 350], [1970, 2000], [1980, 9500], [1990, 25000], [1995, 43000], [2010, 44000], [2025, 34000]];
+const ve_gdp_pts = [[1958, 1000], [1970, 1200], [1980, 4500], [1990, 2500], [1998, 3000], [2008, 11000], [2013, 12000], [2018, 3500], [2025, 3000]];
+const la_gdp_pts = [[1958, 400], [1980, 2500], [1990, 2000], [2000, 4000], [2013, 10000], [2025, 9000]];
+const no_gdp_pts = [[1958, 1300], [1980, 14000], [1990, 28000], [2010, 87000], [2025, 95000]];
+const ru_gdp_pts = [[1958, 800], [1989, 3400], [1999, 1300], [2008, 11000], [2013, 16000], [2020, 10000], [2025, 13000]];
+const sa_gdp_pts = [[1958, 300], [1980, 16000], [1990, 6500], [2000, 8500], [2012, 25000], [2020, 20000], [2025, 32000]];
+const ng_gdp_pts = [[1958, 100], [1980, 800], [1990, 300], [2000, 400], [2014, 3200], [2025, 1500]];
+const my_gdp_pts = [[1958, 200], [1980, 1800], [1990, 2400], [2000, 4000], [2010, 9000], [2025, 12000]];
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Source Serif 4', Georgia, serif;
-    font-weight: 300;
-    line-height: 1.7;
-    min-height: 100vh;
-  }
+const ve_prod_pts = [[1958, 2.6], [1970, 3.7], [1985, 1.7], [1998, 3.3], [2008, 2.4], [2015, 2.4], [2020, 0.5], [2025, 0.8]];
+const no_prod_pts = [[1958, 0], [1971, 0], [1980, 0.5], [1990, 1.7], [2001, 3.4], [2010, 2.1], [2020, 2.0], [2025, 1.9]];
+const ru_prod_pts = [[1958, 2.0], [1980, 11.0], [1988, 11.4], [1996, 6.0], [2010, 10.0], [2019, 11.5], [2025, 9.5]];
+const sa_prod_pts = [[1958, 1.0], [1970, 3.8], [1980, 9.9], [1985, 3.4], [1995, 8.2], [2005, 9.4], [2015, 10.5], [2025, 9.5]];
+const ng_prod_pts = [[1958, 0.01], [1970, 1.0], [1979, 2.3], [1985, 1.5], [2000, 2.1], [2005, 2.5], [2015, 2.3], [2025, 1.3]];
+const my_prod_pts = [[1958, 0], [1980, 0.3], [1990, 0.6], [2000, 0.7], [2010, 0.6], [2025, 0.5]];
 
-  /* ── HEADER ───────────────────────────── */
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 48px 40px 36px;
-    position: relative;
-    overflow: hidden;
+const world_oil_price_pts = [[1958, 3], [1970, 3], [1974, 12], [1980, 37], [1986, 14], [1998, 11], [2008, 97], [2009, 61], [2011, 111], [2014, 93], [2016, 43], [2020, 39], [2022, 100], [2025, 75]];
+
+const ve_rev_pts = [[1958, 50], [1980, 70], [1998, 50], [2008, 90], [2020, 95], [2025, 90]];
+const no_rev_pts = [[1958, 0], [1980, 10], [2000, 20], [2008, 35], [2020, 15], [2022, 40], [2025, 25]];
+const ru_rev_pts = [[1958, 10], [1980, 30], [1998, 15], [2008, 50], [2015, 40], [2025, 35]];
+const sa_rev_pts = [[1958, 80], [1980, 95], [2000, 85], [2010, 90], [2020, 60], [2025, 65]];
+const ng_rev_pts = [[1958, 2], [1980, 80], [2000, 75], [2010, 70], [2020, 50], [2025, 45]];
+const my_rev_pts = [[1958, 0], [1980, 25], [1990, 20], [2000, 30], [2010, 25], [2025, 20]];
+
+const ve_gdp_oil_pts = [[1958, 20], [1980, 30], [1998, 15], [2008, 30], [2020, 15], [2025, 10]];
+const no_gdp_oil_pts = [[1958, 0], [1980, 8], [2000, 15], [2008, 25], [2020, 10], [2022, 25], [2025, 15]];
+const ru_gdp_oil_pts = [[1958, 5], [1980, 15], [1998, 8], [2008, 20], [2015, 15], [2025, 15]];
+const sa_gdp_oil_pts = [[1958, 40], [1980, 60], [2000, 40], [2010, 45], [2020, 30], [2025, 35]];
+const ng_gdp_oil_pts = [[1958, 1], [1980, 30], [2000, 20], [2010, 15], [2020, 8], [2025, 6]];
+const my_gdp_oil_pts = [[1958, 0], [1980, 15], [1990, 12], [2000, 10], [2010, 8], [2025, 5]];
+
+const jp_dem_pts = [[1958, 8], [1990, 9], [2025, 8.5]];
+const ve_dem_pts = [[1958, 5], [1970, 7], [1990, 7], [1999, 6.5], [2005, 5], [2015, 3], [2025, 1.5]];
+const la_dem_pts = [[1958, 4], [1975, 2.5], [1990, 6], [2005, 6.5], [2025, 5.5]];
+const no_dem_pts = [[1958, 9.5], [2025, 10]];
+const ru_dem_pts = [[1958, 1], [1985, 1.5], [1992, 5], [2000, 4], [2010, 2.5], [2025, 1]];
+const sa_dem_pts = [[1958, 0], [2025, 0.5]];
+const ng_dem_pts = [[1958, 3], [1966, 1], [1979, 4], [1983, 1], [1999, 4.5], [2025, 4]];
+const my_dem_pts = [[1958, 6], [1980, 5], [1990, 4.5], [2000, 6], [2010, 6.5], [2025, 7]];
+
+const jp_cor_pts = [[1958, 60], [1990, 70], [2025, 73]];
+const ve_cor_pts = [[1958, 40], [1990, 30], [2005, 25], [2015, 15], [2025, 13]];
+const la_cor_pts = [[1958, 40], [2000, 35], [2025, 38]];
+const no_cor_pts = [[1958, 80], [2025, 84]];
+const ru_cor_pts = [[1958, 30], [1995, 20], [2010, 25], [2025, 26]];
+const sa_cor_pts = [[1958, 30], [2000, 40], [2020, 53], [2025, 52]];
+const ng_cor_pts = [[1958, 30], [1990, 10], [2010, 24], [2025, 25]];
+const my_cor_pts = [[1958, 40], [1980, 50], [1990, 48], [2000, 45], [2010, 44], [2025, 50]];
+
+const jp_gov_pts = [[1958, 0.5], [1990, 1.5], [2025, 1.6]];
+const ve_gov_pts = [[1958, 0.0], [1990, -0.2], [2000, -0.8], [2015, -1.5], [2025, -1.8]];
+const la_gov_pts = [[1958, -0.1], [2000, -0.2], [2025, -0.3]];
+const no_gov_pts = [[1958, 1.2], [2025, 1.9]];
+const ru_gov_pts = [[1958, -0.5], [1995, -1.2], [2005, -0.4], [2025, -0.6]];
+const sa_gov_pts = [[1958, -0.8], [2000, 0.0], [2020, 0.5], [2025, 0.4]];
+const ng_gov_pts = [[1958, -0.5], [1995, -1.2], [2015, -1.0], [2025, -1.1]];
+const my_gov_pts = [[1958, 0.2], [1980, 0.8], [1990, 0.9], [2000, 1.0], [2010, 1.1], [2025, 1.1]];
+
+const jp_gini_pts = [[1958, 35], [1980, 28], [2000, 32], [2025, 33]];
+const ve_gini_pts = [[1958, 50], [1990, 52], [2005, 42], [2015, 55], [2025, 65]]; 
+const la_gini_pts = [[1958, 55], [1990, 56], [2010, 50], [2025, 51]];
+const no_gini_pts = [[1958, 28], [1980, 23], [2025, 27]];
+const ru_gini_pts = [[1958, 25], [1995, 48], [2010, 38], [2025, 36]];
+const sa_gini_pts = [[1958, 45], [2000, 42], [2025, 45]];
+const ng_gini_pts = [[1958, 45], [1990, 48], [2010, 43], [2025, 35]];
+const my_gini_pts = [[1958, 50], [1980, 48], [1990, 46], [2000, 46], [2010, 43], [2025, 41]];
+
+const jp_hdi_pts = [[1958, 0.65], [1980, 0.80], [2000, 0.88], [2025, 0.92]];
+const ve_hdi_pts = [[1958, 0.55], [1980, 0.68], [2000, 0.68], [2012, 0.77], [2020, 0.70], [2025, 0.69]];
+const la_hdi_pts = [[1958, 0.45], [1980, 0.60], [2000, 0.68], [2025, 0.76]];
+const no_hdi_pts = [[1958, 0.70], [1980, 0.82], [2000, 0.92], [2025, 0.96]];
+const ru_hdi_pts = [[1958, 0.60], [1980, 0.75], [1995, 0.70], [2015, 0.82], [2025, 0.82]];
+const sa_hdi_pts = [[1958, 0.30], [1980, 0.60], [2000, 0.73], [2025, 0.87]];
+const ng_hdi_pts = [[1958, 0.20], [1980, 0.40], [2000, 0.43], [2025, 0.54]];
+const my_hdi_pts = [[1958, 0.4], [1980, 0.6], [1990, 0.65], [2000, 0.75], [2010, 0.77], [2025, 0.81]];
+
+const ptsMap = {
+  gdp_per_capita: { jp: jp_gdp_pts, ve: ve_gdp_pts, la: la_gdp_pts, no: no_gdp_pts, ru: ru_gdp_pts, sa: sa_gdp_pts, ng: ng_gdp_pts, my: my_gdp_pts },
+  oil_production: { ve: ve_prod_pts, no: no_prod_pts, ru: ru_prod_pts, sa: sa_prod_pts, ng: ng_prod_pts, my: my_prod_pts },
+  oil_price: { world: world_oil_price_pts },
+  oil_revenue_gov: { ve: ve_rev_pts, no: no_rev_pts, ru: ru_rev_pts, sa: sa_rev_pts, ng: ng_rev_pts, my: my_rev_pts },
+  oil_revenue_gdp: { ve: ve_gdp_oil_pts, no: no_gdp_oil_pts, ru: ru_gdp_oil_pts, sa: sa_gdp_oil_pts, ng: ng_gdp_oil_pts, my: my_gdp_oil_pts },
+  democracy: { jp: jp_dem_pts, ve: ve_dem_pts, la: la_dem_pts, no: no_dem_pts, ru: ru_dem_pts, sa: sa_dem_pts, ng: ng_dem_pts, my: my_dem_pts },
+  corruption: { jp: jp_cor_pts, ve: ve_cor_pts, la: la_cor_pts, no: no_cor_pts, ru: ru_cor_pts, sa: sa_cor_pts, ng: ng_cor_pts, my: my_cor_pts },
+  gov_effectiveness: { jp: jp_gov_pts, ve: ve_gov_pts, la: la_gov_pts, no: no_gov_pts, ru: ru_gov_pts, sa: sa_gov_pts, ng: ng_gov_pts, my: my_gov_pts },
+  gini: { jp: jp_gini_pts, ve: ve_gini_pts, la: la_gini_pts, no: no_gini_pts, ru: ru_gini_pts, sa: sa_gini_pts, ng: ng_gini_pts, my: my_gini_pts },
+  hdi: { jp: jp_hdi_pts, ve: ve_hdi_pts, la: la_hdi_pts, no: no_hdi_pts, ru: ru_hdi_pts, sa: sa_hdi_pts, ng: ng_hdi_pts, my: my_hdi_pts },
+};
+
+const allEntities = [
+  { key: 'jp', name: '日本', level: 'Non-Rentier', color: '#ef4444', desc: '非資源国比較' },
+  { key: 've', name: 'ベネズエラ', level: 'L4', color: '#f59e0b', desc: '略奪型・機能不全' },
+  { key: 'la', name: 'ラテンアメリカ平均', level: 'Avg', color: '#8b5cf6', desc: '地域平均' },
+  { key: 'no', name: 'ノルウェー', level: 'L1', color: '#10b981', desc: '制度的民主制' },
+  { key: 'my', name: 'マレーシア', level: 'L2', color: '#0ea5e9', desc: '開発志向体制' },
+  { key: 'ru', name: 'ロシア', level: 'L3', color: '#8b5cf6', desc: '権威主義的抽出' },
+  { key: 'sa', name: 'サウジアラビア', level: 'L3', color: '#ec4899', desc: '分配型・洗練された独裁' },
+  { key: 'ng', name: 'ナイジェリア', level: 'L4', color: '#14b8a6', desc: '不安定な略奪' },
+  { key: 'world', name: '世界基準価格', level: 'Avg', color: '#111827', desc: '' },
+];
+
+// 難民・移民データ 
+const migrationData = [
+  { country: 'コロンビア', value: 2.87, color: '#3b82f6' },
+  { country: 'ペルー', value: 1.54, color: '#10b981' },
+  { country: '米国 (推定)', value: 0.545, color: '#4f46e5' },
+  { country: 'ブラジル', value: 0.51, color: '#f59e0b' },
+  { country: 'スペイン', value: 0.477, color: '#8b5cf6' },
+  { country: 'エクアドル', value: 0.475, color: '#ef4444' },
+  { country: 'チリ', value: 0.444, color: '#0ea5e9' },
+  { country: 'アルゼンチン', value: 0.22, color: '#f43f5e' }
+].sort((a, b) => b.value - a.value);
+
+// 住民組織データ
+const consejosData = [
+  { year: '2006', value: 15000 },
+  { year: '2008', value: 30000 },
+  { year: '2010', value: 36000 },
+  { year: '2013', value: 43000 },
+  { year: '2016', value: 45000 },
+  { year: '2019', value: 47000 },
+  { year: '2022', value: 49000 },
+  { year: '2024', value: 49500 }
+];
+
+// CLAPデータ
+const clapData = [
+  { year: '2016', value: 26000 },
+  { year: '2017', value: 32000 },
+  { year: '2018', value: 34000 },
+  { year: '2020', value: 36000 },
+  { year: '2022', value: 38000 },
+  { year: '2024', value: 40000 }
+];
+
+// 汚職被害推計データ
+const corruptionData = [
+  { name: 'プントフィホ期 (25年間推計)', value: 100, color: '#94a3b8' },
+  { name: 'チャベス期 (CADIVI・架空輸入)', value: 300, color: '#3b82f6' },
+  { name: 'マドゥロ期 (PDVSA-Cripto事件)', value: 21, color: '#e11d48' }
+];
+
+// 軍人閣僚割合データ
+const militaryCabinetData = [
+  { year: '1958-1998(平均)', value: 3, era: 'puntofijo' },
+  { year: '2004(チャベス初期)', value: 25, era: 'chavez' },
+  { year: '2008(チャベス後期)', value: 30, era: 'chavez' },
+  { year: '2014(マドゥロ初期)', value: 25, era: 'maduro' },
+  { year: '2017(危機ピーク)', value: 43, era: 'maduro' },
+  { year: '2020(マドゥロ)', value: 35, era: 'maduro' },
+  { year: '2024(現在)', value: 30, era: 'maduro' }
+];
+
+const getPointColor = (era) => {
+  if (era === 'puntofijo') return '#3b82f6';
+  if (era === 'chavez') return '#f43f5e';
+  if (era === 'maduro') return '#b91c1c';
+  return '#475569';
+};
+
+// カスタムのドット描画関数（時代ごとに色を変える）
+const CustomizedDot = (props) => {
+  const { cx, cy, payload } = props;
+  return (
+    <circle cx={cx} cy={cy} r={6} stroke="#fff" strokeWidth={2} fill={getPointColor(payload.era)} />
+  );
+};
+
+
+// メニュー構造の定義
+const MENU_GROUPS = [
+  {
+    title: "主要指標の推移",
+    items: [
+      { id: 'gdp_per_capita', name: '一人あたりのGDP (USD)', format: 'currency', type: 'line' },
+      { id: 'oil_production', name: '石油生産量 (百万バレル/日)', format: 'number', type: 'line' },
+      { id: 'oil_price', name: '石油価格の推移 (USD/バレル)', format: 'currency', type: 'line' },
+      { id: 'oil_revenue_gov', name: '国家収入に占める石油収入 (%)', format: 'percent', type: 'line' },
+      { id: 'oil_revenue_gdp', name: 'GDPに占める石油収入 (%)', format: 'percent', type: 'line' },
+      { id: 'democracy', name: '民主化指数 (0〜10点)', format: 'number', type: 'line' },
+      { id: 'corruption', name: '汚職指数 (0〜100点: クリーンなほど高)', format: 'number', type: 'line' },
+      { id: 'gov_effectiveness', name: '政府の有効性 (-2.5〜2.5)', format: 'number', type: 'line' },
+      { id: 'gini', name: 'ジニ係数 (0〜100: 不平等なほど高)', format: 'number', type: 'line' },
+      { id: 'hdi', name: '人間開発指数 (HDI: 0〜1)', format: 'number', type: 'line' },
+    ]
+  },
+  {
+    title: "分析・レポート",
+    items: [
+      { id: 'view_overview', name: '概論：レンティア国家', type: 'custom', icon: <BookOpen size={16} /> },
+      { id: 'view_levels', name: '統治レベル分類 (L1-L4)', type: 'custom', icon: <Layers size={16} /> },
+      { id: 'view_comparative', name: '比較分析：能力と民主化', type: 'custom', icon: <BarChart3 size={16} /> },
+      { id: 'view_diversification', name: 'オランダ病と経済多角化', type: 'custom', icon: <Factory size={16} /> },
+    ]
+  },
+  {
+    title: "深層分析：ベネズエラ",
+    items: [
+      { id: 'view_exodus', name: '国外脱出と頭脳流出', type: 'custom', icon: <Users size={16} /> },
+      { id: 'view_social_control', name: '住民組織・配給・コレクティーボ', type: 'custom', icon: <Network size={16} /> },
+      { id: 'view_corruption_cases', name: '歴代政権の汚職と公金消失', type: 'custom', icon: <DollarSign size={16} /> },
+      { id: 'view_military_control', name: '軍の政治・経済支配の変遷', type: 'custom', icon: <Crosshair size={16} /> },
+      { id: 'vzla_fonden', name: 'パラレル予算 (FONDEN)', format: 'number', unit: 'Billion USD', type: 'bar' },
+      { id: 'vzla_pdvsa', name: 'PDVSA稼働率推移', format: 'percent', unit: '%', type: 'area' },
+      { id: 'vzla_hire', name: '公務員雇用構造の変容', format: 'percent', unit: '%', type: 'stacked_area' },
+    ]
   }
-  header::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(
-      -45deg, transparent, transparent 40px,
-      rgba(192,57,43,0.03) 40px, rgba(192,57,43,0.03) 41px
+];
+
+// フラットな指標リスト（検索・参照用）
+const allMetricsList = MENU_GROUPS.flatMap(g => g.items).filter(i => i.type !== 'custom');
+
+const VZLA_EVENTS = [
+  { year: 1999, label: '1999 憲法改正' },
+  { year: 2003, label: '2002–03 PDVSA危機' },
+  { year: 2005, label: '2005 FONDEN' },
+  { year: 2014, label: '2014 逆オイルショック' },
+  { year: 2017, label: '2017 制憲議会' },
+  { year: 2019, label: '2019 制裁強化期' },
+  { year: 2020, label: '2020 COVID' },
+];
+
+// --- ユーティリティ ---
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const lerp = (year, points) => {
+  for (let i = 0; i < points.length - 1; i++) {
+    if (year >= points[i][0] && year <= points[i+1][0]) {
+      const rangeY = points[i+1][0] - points[i][0];
+      const progress = (year - points[i][0]) / rangeY;
+      return points[i][1] + progress * (points[i+1][1] - points[i][1]);
+    }
+  }
+  if (year < points[0][0]) return points[0][1];
+  return points[points.length-1][1];
+};
+
+
+export default function App() {
+  const [selectedMenuItem, setSelectedMenuItem] = useState('view_overview');
+  
+  // アコーディオンの開閉状態を管理するState
+  const [openGroups, setOpenGroups] = useState(() => {
+    const initialState = {};
+    MENU_GROUPS.forEach((group, idx) => {
+      // 初期状態では、選択されているアイテムが含まれるグループを開いておく
+      initialState[idx] = group.items.some(item => item.id === 'view_overview');
+    });
+    return initialState;
+  });
+
+  // グループの開閉を切り替える関数
+  const toggleGroup = (groupIdx) => {
+    setOpenGroups(prev => ({
+      ...prev,
+      [groupIdx]: !prev[groupIdx]
+    }));
+  };
+
+  // 1958年から2025年までのデータを生成
+  const chartData = useMemo(() => {
+    const dataArray = [];
+    for (let year = 1958; year <= 2025; year++) {
+      const row = { year };
+      
+      Object.keys(ptsMap).forEach(metric => {
+        Object.keys(ptsMap[metric]).forEach(entity => {
+           let noiseAmt = 0.03; 
+           if (['democracy', 'gov_effectiveness', 'hdi'].includes(metric)) noiseAmt = 0.005;
+           if (['oil_price', 'oil_production'].includes(metric)) noiseAmt = 0.06;
+           
+           const baseValue = lerp(year, ptsMap[metric][entity]);
+           const finalValue = baseValue * (1 + (Math.random() - 0.5) * noiseAmt);
+           row[`${entity}_${metric}`] = (metric === 'gov_effectiveness') ? finalValue : Math.max(0, finalValue);
+        });
+      });
+
+      let oilPrice = row['world_oil_price'] || 30;
+      
+      let vzlaParallelBudget = 0;
+      if (year >= 2005) {
+        vzlaParallelBudget = Math.max(0, (oilPrice - 30) * 0.5 + Math.random() * 5);
+        if (year > 2014) vzlaParallelBudget *= Math.pow(0.8, year - 2014);
+      }
+      row.vzla_fonden = parseFloat(vzlaParallelBudget.toFixed(2));
+
+      let pdvsaUtil = 92;
+      if (year > 1998 && year <= 2003) pdvsaUtil = 85 - (year - 1998) * 5;
+      if (year > 2003 && year <= 2012) pdvsaUtil = 75 + Math.random() * 5;
+      if (year > 2012) pdvsaUtil = 75 - Math.pow(year - 2012, 1.6) * 4;
+      row.vzla_pdvsa = parseFloat(clamp(pdvsaUtil, 0, 100).toFixed(1));
+
+      let regularGov = 100;
+      let missionGov = 0;
+      if (year >= 2003) {
+        missionGov = Math.min(60, (year - 2003) * 4);
+        regularGov = 100 - missionGov;
+      }
+      row.vzla_regular = regularGov;
+      row.vzla_mission = missionGov;
+
+      dataArray.push(row);
+    }
+    return dataArray;
+  }, []);
+
+  const latestData = chartData[chartData.length - 1];
+
+  const formatYAxis = (value, format) => {
+    if (format === 'currency') return `$${value.toLocaleString()}`;
+    if (format === 'percent') return `${value}%`;
+    return value;
+  };
+
+  const formatTooltip = (value, name, props, metricDef) => {
+    let formattedValue = value;
+    if (metricDef.format === 'currency') {
+      formattedValue = `$${Number(value).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+      if (metricDef.unit) formattedValue += ` ${metricDef.unit.replace('USD', '').trim()}`;
+    } else if (metricDef.format === 'percent') {
+      formattedValue = `${Number(value).toFixed(1)}%`;
+    } else {
+      formattedValue = Number(value).toFixed(2);
+      if (metricDef.unit) formattedValue += ` ${metricDef.unit}`;
+    }
+    return [formattedValue, props.name || metricDef.name];
+  };
+
+  const renderEventLines = () =>
+    VZLA_EVENTS.map((ev) => (
+      <ReferenceLine
+        key={ev.year} x={ev.year} stroke="#6b7280" strokeDasharray="3 3"
+        label={{ value: ev.label, position: 'insideTopLeft', fill: '#9ca3af', fontSize: 10 }}
+      />
+    ));
+
+  // --- 右側コンテンツエリアの描画 ---
+  const renderContent = () => {
+    
+    // 1. カスタムビュー（レポート・分析）
+    if (selectedMenuItem === 'view_overview') {
+      return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+          <div className="bg-white rounded-2xl shadow-sm p-8 border-l-8 border-blue-500">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <BookOpen className="text-blue-500" />
+              レンティア国家のパラドックス
+            </h2>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              「石油があれば国が豊かになり、民主化が進む」という近代化論は、多くの産油国で否定されています。国家収入の大部分を天然資源の輸出（地代＝レント）に依存する<b>「レンティア国家」</b>では、政府は国民から税を徴収する必要がなく、その結果、「代表なくして課税なし」の逆転現象が生じます。
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+              本ダッシュボードでは、<b>「国家能力（State Capacity）」</b>と<b>「制度の質」</b>という視点から、ノルウェーの成功、マレーシアの開発、サウジアラビアの洗練された独裁、そしてベネズエラの国家崩壊の違いを時系列データを通して解き明かします。
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { icon: <Droplets className="text-blue-600" />, title: "レント依存と無税国家", desc: "政府収入が石油に依存するため、国民への課税が不要になる。これにより国民は政府を監視する「納税者としての権利」を失う。" },
+              { icon: <Zap className="text-blue-600" />, title: "福祉による懐柔", desc: "独裁政権は莫大なオイルマネーで「アメ（補助金・雇用）」を配り、政治的沈黙を買う。これをレンティア社会契約と呼ぶ。" },
+              { icon: <ShieldCheck className="text-blue-600" />, title: "制度の呪い", desc: "資源価格の高騰は民主化を促すのではなく、独裁者が抑圧装置を強化し、既存の制度を腐敗させる資金源となる。" }
+            ].map((item, i) => (
+              <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                <div className="mb-4">{item.icon}</div>
+                <h3 className="font-bold text-gray-800 mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedMenuItem === 'view_levels') {
+      return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="mb-4 text-center max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-800">レンティア国家の4つの統治レベル</h2>
+            <p className="text-gray-500 mt-2 text-sm">国家が資源なしで機能できる「国家能力」を基準とした分類</p>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            {allEntities.filter(c => !['jp', 'la', 'world'].includes(c.key)).map((c, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
+                <div className={`md:w-1/4 p-6 flex flex-col justify-center items-center text-center`} style={{ backgroundColor: `${c.color}15` }}>
+                  <span className="text-xs font-black uppercase tracking-widest opacity-60 mb-1" style={{ color: c.color }}>{c.level}</span>
+                  <h3 className="font-bold text-gray-800 text-lg" style={{ color: c.color }}>{c.name}</h3>
+                  <p className="text-[11px] text-gray-500 mt-1">{c.desc}</p>
+                </div>
+                <div className="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-4 border-t md:border-t-0 md:border-l border-gray-50">
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase mb-2">統治の特徴</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {c.level === 'L1' && "資源発見前に民主制度が確立。包括的制度により資源収入は将来世代のために貯蓄される。"}
+                      {c.level === 'L2' && "製造業などへの多角化に成功。中間層が育ち、政府は資源以外からも徴税するため一定の民主主義が機能。"}
+                      {c.level === 'L3' && "圧倒的資源収入で「無税・高福祉」を実現。国家能力（抑圧と分配）は高く、体制は安定している。"}
+                      {c.level === 'L4' && "国家機構自体が腐敗・崩壊。国民を養う能力も抑圧する能力も欠如し、国家の解体が進む。"}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4 flex flex-col justify-center gap-3">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-500 font-medium">民主化期待値</span>
+                      <span className="font-bold bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">{c.level === 'L1' ? '極めて高い' : (c.level === 'L2' ? '中程度' : '極めて低い')}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-500 font-medium">国家の存続性</span>
+                      <span className="font-bold bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">{c.level === 'L4' ? '危機的' : '安定'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedMenuItem === 'view_comparative') {
+      const scatterData = allEntities.filter(c => !['la', 'world'].includes(c.key)).map(c => ({
+        name: c.name,
+        x: latestData[`${c.key}_democracy`],
+        y: latestData[`${c.key}_gov_effectiveness`],
+        z: latestData[`${c.key}_oil_revenue_gov`] || 0,
+        color: c.color
+      }));
+
+      return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              <h3 className="text-lg font-bold text-gray-800 mb-1">国家能力 vs 民主化レベル (2025年推定)</h3>
+              <p className="text-xs text-gray-400 mb-6">縦軸: 政府効率性 | 横軸: 民主化指数 | バブル: 石油依存度</p>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis type="number" dataKey="x" name="Democracy" domain={[0, 10]} stroke="#9ca3af" />
+                    <YAxis type="number" dataKey="y" name="Capacity" domain={[-2.5, 2.5]} stroke="#9ca3af" />
+                    <ZAxis type="number" dataKey="z" range={[50, 400]} />
+                    <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-gray-800 text-white p-3 rounded-lg shadow-xl text-xs">
+                            <p className="font-bold mb-2 border-b border-gray-600 pb-1">{payload[0].payload.name}</p>
+                            <p className="mb-1">民主化: {Number(payload[0].value).toFixed(1)}</p>
+                            <p className="mb-1">国家能力: {Number(payload[1].value).toFixed(2)}</p>
+                            <p>石油依存: {Number(payload[2].value).toFixed(1)}%</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }} />
+                    <Scatter name="Countries" data={scatterData}>
+                      {scatterData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.8} />
+                      ))}
+                    </Scatter>
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+              <h3 className="text-lg font-bold text-gray-800 mb-1">政府歳入における石油収入比率</h3>
+              <p className="text-xs text-gray-400 mb-6">比率が高いほど、独裁体制の維持や制度崩壊のリスクが上昇する</p>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={allEntities.filter(c => !['jp', 'la', 'world'].includes(c.key)).map(c => ({ name: c.name, rent: latestData[`${c.key}_oil_revenue_gov`], color: c.color }))} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" stroke="#9ca3af" tick={{fontSize: 12}} />
+                    <YAxis stroke="#9ca3af" tickFormatter={(v) => `${v}%`} tick={{fontSize: 12}} />
+                    <Tooltip cursor={{fill: '#f8fafc'}} formatter={(v) => `${Number(v).toFixed(1)}%`} contentStyle={{ borderRadius: '8px' }} />
+                    <Bar dataKey="rent" name="石油収入依存度" radius={[6, 6, 0, 0]}>
+                      {allEntities.filter(c => !['jp', 'la', 'world'].includes(c.key)).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedMenuItem === 'view_diversification') {
+      return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+          <div className="bg-white rounded-2xl shadow-sm p-8 border-l-8 border-emerald-500">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Factory className="text-emerald-500" />
+              オランダ病と経済の多角化 (Economic Diversification)
+            </h2>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              資源ブームによって自国通貨が実質的に増価（為替レートが上昇）し、製造業や農業など他の輸出産業の国際競争力が失われる現象を<b>「オランダ病（Dutch Disease）」</b>と呼びます。資源収入に依存する国家が長期的な安定を築くためには、この罠を回避し、経済を多角化させることが不可欠です。
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+              資源の枯渇や価格変動リスクに備えるため、近年多くの産油国が「脱石油」を掲げています。ここでは、各国の多角化へのアプローチと現状を比較します。
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+              <h3 className="font-bold text-gray-800 border-b pb-2 mb-4 text-lg">
+                成功例：早期の多角化と主権富裕ファンド
+              </h3>
+              <div className="space-y-4">
+                <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                  <h4 className="font-bold text-emerald-800 mb-1">マレーシア (L2)</h4>
+                  <p className="text-sm text-emerald-700 leading-relaxed">
+                    1970年代から積極的に外資を誘致し、電気電子産業を中心とした製造業の育成に成功。石油収入（ペトロナス）は国家予算を支えつつも、輸出の大半は工業製品が占める堅牢な経済構造を構築しました。
+                  </p>
+                </div>
+                <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                  <h4 className="font-bold text-emerald-800 mb-1">ノルウェー (L1)</h4>
+                  <p className="text-sm text-emerald-700 leading-relaxed">
+                    石油収入を国内に還流させず、政府年金基金グローバル（主権富裕ファンド）として海外資産に投資。国内のインフレと自国通貨高（オランダ病）を未然に防ぎ、非石油部門の競争力を維持しています。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+              <h3 className="font-bold text-gray-800 border-b pb-2 mb-4 text-lg">
+                移行期と失敗例：トップダウン改革と崩壊
+              </h3>
+              <div className="space-y-4">
+                <div className="p-4 bg-amber-50 rounded-lg border border-amber-100">
+                  <h4 className="font-bold text-amber-800 mb-1">サウジアラビア (L3)</h4>
+                  <p className="text-sm text-amber-700 leading-relaxed">
+                    「ビジョン2030」を掲げ、エンターテインメント、観光、ITなど非石油部門の育成をトップダウンで急進的に進めています。しかし、依然として国家予算の大部分を石油に依存しており、真の多角化への途上にあります。
+                  </p>
+                </div>
+                <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+                  <h4 className="font-bold text-red-800 mb-1">ベネズエラ (L4)</h4>
+                  <p className="text-sm text-red-700 leading-relaxed">
+                    典型的なオランダ病に陥り、石油ブーム期に国内の農業・製造業が壊滅。さらに価格統制や外貨規制が民間投資を阻害し、原油価格の下落とともに経済全体が機能不全に陥りました。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedMenuItem === 'view_exodus') {
+      return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+            <div className="mb-6 border-b border-gray-100 pb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <Users className="text-indigo-500" />
+                ベネズエラからの巨大な頭脳流出と難民危機（1999-2024）
+              </h2>
+              <p className="text-gray-600 text-sm md:text-base">総人口の約25%にあたる約770万人が国を捨てた「4つの波」と主要な行き先</p>
+              <p className="text-xs text-gray-400 mt-2">※参照元：UNHCR、IOM、R4V（ベネズエラ難民・移民に関する地域省庁間調整プラットフォーム）、ENCOVI</p>
+            </div>
+
+            {/* グラフセクション */}
+            <div className="mb-8 bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-700 mb-2">🗺️ 主要な受け入れ国と推定難民・移民数（2023-2024年時点）</h3>
+              <p className="text-sm text-gray-500 mb-6">当初は隣国コロンビアが最大の受け皿でしたが、近年はペルー、チリ、米国などへ目的地が拡散しています。※不法越境者が多く、実際の数はこれを大きく上回ると推測されます。</p>
+              
+              <div className="w-full h-[320px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart layout="vertical" data={migrationData} margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
+                    <XAxis type="number" tick={{fontSize: 12, fill: '#6b7280'}} tickFormatter={(v) => `${v}`} />
+                    <YAxis type="category" dataKey="country" tick={{fontSize: 12, fontWeight: 'bold', fill: '#374151'}} width={90} />
+                    <Tooltip 
+                      cursor={{fill: '#f3f4f6'}} 
+                      formatter={(value) => [`約 ${(value * 100).toFixed(0)} 万人`, '推定人数']}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                    />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+                      {migrationData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* テーブルセクション */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden mb-8">
+              <h3 className="text-lg font-bold text-gray-800 bg-gray-100 p-4 border-b border-gray-200">🌊 時期別：脱出の「4つの波」と階層的変化</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-700">
+                    <tr>
+                      <th className="py-3 px-4 font-semibold border-b w-1/6">時期・波</th>
+                      <th className="py-3 px-4 font-semibold border-b w-1/5">脱出した主な階層・職種</th>
+                      <th className="py-3 px-4 font-semibold border-b w-1/4">脱出の理由・特徴</th>
+                      <th className="py-3 px-4 font-semibold border-b w-1/6">主要な行き先</th>
+                      <th className="py-3 px-4 font-semibold border-b text-right">推定人数</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    <tr className="hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4">
+                        <span className="font-bold text-gray-800 block">第1波：頭脳流出</span>
+                        <span className="text-xs text-gray-500">1999年 〜 2003年</span>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">富裕層、企業経営者、PDVSAの熟練技術者（ストライキ解雇者）、医師・エンジニア</td>
+                      <td className="py-3 px-4 text-gray-600">
+                        <strong>【政治的危機と解雇】</strong><br/>チャベス政権誕生に対する社会不安と、2002年の国営石油（PDVSA）ストライキ後の大量解雇（約2万人）が引き金。資産やスキルを持った「合法的な移民」として新天地に投資し、定着した。
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">🇺🇸 米国（マイアミ等）<br/>🇪🇸 スペイン</td>
+                      <td className="py-3 px-4 text-right font-semibold text-gray-700">約 10万〜20万人</td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4">
+                        <span className="font-bold text-gray-800 block">第2波：中産階級の流出</span>
+                        <span className="text-xs text-gray-500">2004年 〜 2013年</span>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">中産階級、若手専門家、大学卒業生、中小起業家</td>
+                      <td className="py-3 px-4 text-gray-600">
+                        <strong>【経済統制と治安悪化】</strong><br/>厳格な外貨統制（CADIVI）によるビジネス環境の悪化、企業の強制収用、および世界最悪レベルに達した「殺人率の上昇（治安崩壊）」から逃れるための自発的な脱出。
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">🇺🇸 米国、🇪🇸 スペイン、<br/>🇨🇴 コロンビア、🇵🇦 パナマ</td>
+                      <td className="py-3 px-4 text-right font-semibold text-gray-700">約 50万〜80万人</td>
+                    </tr>
+                    <tr className="hover:bg-blue-50 transition-colors bg-blue-50/30">
+                      <td className="py-3 px-4">
+                        <span className="font-bold text-blue-800 block">第3波：生存のための脱出</span>
+                        <span className="text-xs text-blue-600">2014年 〜 2019年</span>
+                      </td>
+                      <td className="py-3 px-4 text-blue-900 font-medium">労働者階級、低所得層、農民、先住民、若年層</td>
+                      <td className="py-3 px-4 text-blue-800">
+                        <strong>【ハイパーインフレと飢餓】</strong><br/>原油暴落と経済崩壊による「食料と医薬品の絶対的枯渇」。全財産を売り払い、バスや徒歩で国境を越える悲惨な難民化現象<strong>（Caminantes：歩く人々）</strong>が発生。南米全土に人道危機をもたらした。
+                      </td>
+                      <td className="py-3 px-4 text-blue-800">🇨🇴 コロンビア、🇵🇪 ペルー、<br/>🇪🇨 エクアドル、🇨🇱 チリ</td>
+                      <td className="py-3 px-4 text-right font-bold text-blue-700 text-lg">約 400万〜450万人</td>
+                    </tr>
+                    <tr className="hover:bg-rose-50 transition-colors bg-rose-50/40">
+                      <td className="py-3 px-4">
+                        <span className="font-bold text-rose-800 block">第4波：絶望の連鎖</span>
+                        <span className="text-xs text-rose-600">2020年 〜 2024年(現在)</span>
+                      </td>
+                      <td className="py-3 px-4 text-rose-900 font-medium">残された最貧困層、家族との再統合を求める人々</td>
+                      <td className="py-3 px-4 text-rose-800">
+                        <strong>【ダリエン地峡ルートの急増】</strong><br/>「マドゥロ政権は終わらない」という政治的絶望と、南米諸国での排外主義や経済悪化による再移住。死のジャングル「ダリエン地峡」を徒歩で越え、米国を目指す極めて危険な不法入国が爆発的に増加。
+                      </td>
+                      <td className="py-3 px-4 text-rose-800">🇺🇸 米国（メキシコ国境）、<br/>🇨🇴 コロンビア</td>
+                      <td className="py-3 px-4 text-right font-bold text-rose-700 text-lg">約 200万〜250万人</td>
+                    </tr>
+                    <tr className="bg-gray-100">
+                      <td colSpan="4" className="py-3 px-4 text-right font-bold text-gray-800">累計推定（2024年時点・R4V推計）</td>
+                      <td className="py-3 px-4 text-right font-black text-gray-800 text-xl">約 772 万人</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+              <h3 className="font-bold text-amber-800 mb-2">💡 分析：失われた「世代」と「才能」</h3>
+              <p className="text-sm text-amber-900 leading-relaxed">
+                この大規模な流出の最も残酷な点は、<strong>初期（第1波・第2波）に「国を立て直すために必要な専門家や若者」が先に流出してしまった</strong>ことです。PDVSAの熟練エンジニア、大学教授、医師、起業家などの「頭脳流出」が、残された国内のインフラ崩壊（停電や医療崩壊）をさらに加速させました。<br/><br/>
+                そして後期（第3波以降）には、貧困により自国で生きていくことができなくなった人々が<strong>「難民」</strong>として周辺国へあふれ出し、現在では米国の国境危機（不法移民問題）の最大の要因の一つとなるなど、国際問題へと発展しています。
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedMenuItem === 'view_social_control') {
+      return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+            <div className="mb-6 border-b border-gray-100 pb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <Network className="text-blue-500" />
+                ベネズエラ「社会統制」システムの量的拡大
+              </h2>
+              <p className="text-gray-600 text-sm md:text-base">チャベス時代の住民参加組織から、マドゥロ時代の配給・暴力支配ネットワークへの変遷</p>
+              <p className="text-xs text-gray-400 mt-2">※政府公式発表値およびNGO（InSight Crime等）の推計データに基づく</p>
+            </div>
+
+            {/* グラフセクション */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              
+              {/* グラフ1: 住民組織 */}
+              <div className="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-700 mb-1">🏡 住民組織（共同体評議会）の設立数</h3>
+                <p className="text-xs text-gray-500 mb-4">Consejos Comunales: チャベス政権が法制化し、地方行政を代替した地域組織</p>
+                <div className="w-full h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={consejosData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis dataKey="year" tick={{fontSize: 12, fill: '#6b7280'}} />
+                      <YAxis tick={{fontSize: 12, fill: '#6b7280'}} tickFormatter={(v) => v.toLocaleString()} width={60} />
+                      <Tooltip 
+                        formatter={(value) => [value.toLocaleString(), '組織数']} 
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Line type="monotone" dataKey="value" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 4, fill: '#fff', stroke: '#0ea5e9', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* グラフ2: CLAP */}
+              <div className="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-700 mb-1">📦 食料配給委員会（CLAP）の組織数</h3>
+                <p className="text-xs text-gray-500 mb-4">Comités Locales de Abastecimiento y Producción: 経済危機後に作られた配給網</p>
+                <div className="w-full h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={clapData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis dataKey="year" tick={{fontSize: 12, fill: '#6b7280'}} />
+                      <YAxis tick={{fontSize: 12, fill: '#6b7280'}} tickFormatter={(v) => v.toLocaleString()} width={60} />
+                      <Tooltip 
+                        cursor={{fill: '#f3f4f6'}}
+                        formatter={(value) => [value.toLocaleString(), '委員会数']} 
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Bar dataKey="value" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            {/* コレクティーボの表・解説セクション */}
+            <div className="bg-rose-50 p-6 rounded-lg border border-rose-200 shadow-sm mb-8">
+              <h3 className="text-xl font-bold text-rose-800 mb-2">🏍️ 「コレクティーボ（Colectivos）」の変遷と推計規模</h3>
+              <p className="text-sm text-rose-900 mb-4">
+                非正規の親政権武装グループであるため公式統計はありませんが、治安・犯罪分析機関（InSight Crime等）の推計によると、時代と共に役割と武装度が劇的に拡大しています。
+              </p>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-rose-100 rounded-lg overflow-hidden">
+                  <thead className="bg-rose-100 text-rose-800">
+                    <tr>
+                      <th className="py-3 px-4 text-left text-sm font-semibold">時期</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold">政権</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold">組織の性質と主要な出来事</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold">推計規模・武装度</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm text-gray-700 divide-y divide-rose-50">
+                    <tr className="hover:bg-rose-50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-gray-800 whitespace-nowrap">2001-2004</td>
+                      <td className="py-3 px-4 text-gray-600">チャベス初期</td>
+                      <td className="py-3 px-4">「ボリバル・サークル（Círculos Bolivarianos）」として結成。政府支援の街頭活動や政治集会への動員が主目的。</td>
+                      <td className="py-3 px-4"><span className="font-semibold text-orange-600">全国で数十万人</span>が登録するも、大半は非武装の一般市民。</td>
+                    </tr>
+                    <tr className="hover:bg-rose-50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-gray-800 whitespace-nowrap">2006-2012</td>
+                      <td className="py-3 px-4 text-gray-600">チャベス後期</td>
+                      <td className="py-3 px-4">都市部のスラム（23 de Enero地区など）で、元左翼ゲリラなどを中心に武装化した「コレクティーボ」が定着。特定の地域を「解放区」として警察を排除し支配。</td>
+                      <td className="py-3 px-4">カラカスを中心に<span className="font-semibold text-orange-600">数十の中核的武装グループ</span>が存在。</td>
+                    </tr>
+                    <tr className="hover:bg-rose-50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-gray-800 whitespace-nowrap">2014-2017</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold">マドゥロ危機</td>
+                      <td className="py-3 px-4">大規模な反政府デモに対し、政府が「体制の防衛者」として公式に動員。バイクに乗って発砲し、デモ隊を暴力的に鎮圧するパラミリタリー（準軍事組織）として機能。</td>
+                      <td className="py-3 px-4">銃器で武装した中核メンバーが<span className="font-bold text-rose-600">推定5,000〜7,000人</span>規模でデモ鎮圧に投入される。</td>
+                    </tr>
+                    <tr className="hover:bg-rose-50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-gray-800 whitespace-nowrap">2018-現在</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold">マドゥロ統制期</td>
+                      <td className="py-3 px-4">国家治安部隊（FAESなど）との一体化が進行。食料配給（CLAP）の監視や、闇市場・ガソリン密売の利権を掌握し、マフィア的な犯罪シンジケート化。</td>
+                      <td className="py-3 px-4">全国規模でネットワーク化され、<span className="font-bold text-rose-600">重武装メンバー約1万人</span>が体制維持の中核を担う。</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+              <h3 className="font-bold text-blue-800 mb-2">💡 分析：参加型デモクラシーから「生存の従属」へ</h3>
+              <p className="text-sm text-blue-900 leading-relaxed">
+                チャベス時代に作られた「共同体評議会（Consejos Comunales）」は、当初は住民が自らの地域の予算を決める<strong>参加型民主主義の象徴</strong>として莫大なオイルマネーが投じられました。しかし、マドゥロ政権下で経済が崩壊すると、政府はこのネットワークを利用して<strong>CLAP（食料配給）</strong>を開始しました。<br/><br/>
+                これにより、政府を支持しない（またはデモに参加する）住民には<strong>「食料の配給を停止する」という致命的な脅し（ソーシャル・コントロール）</strong>が可能になりました。さらに、地域社会に深く入り込んだ武装組織（コレクティーボ）が暴力による威嚇と利権の支配を行うことで、市民の不満を押さえ込む現在の強固な体制が完成しました。
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedMenuItem === 'view_corruption_cases') {
+      return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+            <div className="mb-6 border-b border-gray-100 pb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <DollarSign className="text-red-600" />
+                ベネズエラ歴代政権の巨大汚職・公金消失の規模
+              </h2>
+              <p className="text-gray-600 text-sm md:text-base">プントフィホ期 〜 チャベス期 〜 マドゥロ期の代表的な推計値（単位：10億米ドル）</p>
+              <p className="text-xs text-gray-400 mt-2">※汚職の性質上、正確な統計はなく、NGO、元閣僚の告発、議会調査、国際司法機関に基づく「被害推計額」です。</p>
+            </div>
+
+            {/* グラフセクション */}
+            <div className="mb-8 bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-700 mb-2">📊 各時代の「最大級の汚職/資金消失」推計額の比較</h3>
+              <p className="text-sm text-gray-500 mb-6">チャベス期の原油ブーム時に最も巨額の資金が流出しましたが、マドゥロ期の消失額は「経済規模（GDP）に対する破壊力」が極めて高いのが特徴です。</p>
+              
+              <div className="w-full h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={corruptionData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="name" tick={{fontSize: 12, fill: '#374151', fontWeight: 'bold'}} />
+                    <YAxis tick={{fontSize: 12, fill: '#6b7280'}} tickFormatter={(v) => v} />
+                    <Tooltip 
+                      cursor={{fill: '#f3f4f6'}}
+                      formatter={(value) => [`約 ${value}0億米ドル ($${value} Billion)`, '推計被害額']} 
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={80}>
+                      {corruptionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 詳細テーブルセクション */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden mb-8">
+              <h3 className="text-lg font-bold text-gray-800 bg-gray-100 p-4 border-b border-gray-200">📋 時代別の主な巨大汚職・スキャンダル一覧</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-700">
+                    <tr>
+                      <th className="py-3 px-4 font-semibold border-b w-1/6">時代</th>
+                      <th className="py-3 px-4 font-semibold border-b w-1/4">事件・メカニズム名</th>
+                      <th className="py-3 px-4 font-semibold border-b w-1/6">推計規模</th>
+                      <th className="py-3 px-4 font-semibold border-b">概要・手口</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {/* プントフィホ期 */}
+                    <tr className="hover:bg-gray-50">
+                      <td className="py-3 px-4 text-gray-800 font-medium" rowSpan={2}>プントフィホ期<br/><span className="text-xs text-gray-500">(1958-1998)</span></td>
+                      <td className="py-3 px-4 font-semibold text-gray-700">全体推計<br/>(オイルマネーの不正流用)</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold">約1,000億ドル</td>
+                      <td className="py-3 px-4 text-gray-600">ベネズエラのNGO「Pro Calidad de Vida」による推計。1970年代のオイルショック以降、約25年間で汚職や無駄遣いによって失われたとされる国富の総額。</td>
+                    </tr>
+                    <tr className="hover:bg-gray-50">
+                      <td className="py-3 px-4 font-semibold text-gray-700">RECADI事件 /<br/>C.A.ペレス大統領の弾劾</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold">数十億ドル /<br/>約1,700万ドル</td>
+                      <td className="py-3 px-4 text-gray-600">1980年代の複数為替制度（RECADI）を利用した大規模な横領。また1993年、ペレス大統領は機密の安全保障基金から約1700万ドル（当時の2億5000万ボリバル）を不正流用したとして弾劾・罷免された。</td>
+                    </tr>
+                    {/* チャベス期 */}
+                    <tr className="hover:bg-blue-50 bg-blue-50/20">
+                      <td className="py-3 px-4 text-gray-800 font-medium" rowSpan={3}>チャベス期<br/><span className="text-xs text-gray-500">(1999-2013)</span></td>
+                      <td className="py-3 px-4 font-semibold text-gray-700">CADIVI（外貨統制）と<br/>架空企業（Maletín）</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold text-lg">約3,000億ドル</td>
+                      <td className="py-3 px-4 text-gray-600"><strong>【歴史上最大規模】</strong> チャベス政権の元財務相（ジョルダニ）や元教育相（ナバロ）らが自ら告発した数字。厳格な外貨統制の裏で、政権幹部や関係者が「ペーパーカンパニー」を使って優遇レートのドルを不当に引き出し、海外に持ち去った総額。</td>
+                    </tr>
+                    <tr className="hover:bg-blue-50 bg-blue-50/20">
+                      <td className="py-3 px-4 font-semibold text-gray-700">PDVSA（国営石油）からの<br/>資金消失（ラミレス時代）</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold">約110億ドル</td>
+                      <td className="py-3 px-4 text-gray-600">2016年に野党多数派の国会が調査報告。2004年〜2014年（チャベス〜マドゥロ初期）にかけて、国営石油会社PDVSAから使途不明で消失した巨額資金。</td>
+                    </tr>
+                    <tr className="hover:bg-blue-50 bg-blue-50/20">
+                      <td className="py-3 px-4 font-semibold text-gray-700">国家財務官の収賄<br/>(A. アンドラーデ)</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold">約10億ドル</td>
+                      <td className="py-3 px-4 text-gray-600">チャベス大統領の元ボディガードで国家財務官に登用されたアンドラーデが、為替取引の便宜を図る見返りに受け取った賄賂の額（米国の裁判で本人が有罪を認めた）。</td>
+                    </tr>
+                    {/* マドゥロ期 */}
+                    <tr className="hover:bg-rose-50 bg-rose-50/30">
+                      <td className="py-3 px-4 text-gray-800 font-medium" rowSpan={2}>マドゥロ期<br/><span className="text-xs text-gray-500">(2013-現在)</span></td>
+                      <td className="py-3 px-4 font-semibold text-gray-700">PDVSA-Cripto事件<br/>（石油代金の未回収）</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold">約210億ドル</td>
+                      <td className="py-3 px-4 text-gray-600">2023年に発覚。米国の制裁を逃れるため、暗号資産（仮想通貨）や仲介業者を使って石油を密売した結果、<strong>売上金の大半（約210億ドル）が国庫に入らず消失</strong>した事件。エル・アイサミ石油相らが逮捕された。</td>
+                    </tr>
+                    <tr className="hover:bg-rose-50 bg-rose-50/30">
+                      <td className="py-3 px-4 font-semibold text-gray-700">CLAP（食料配給）と<br/>アレックス・サーブの資金洗浄</td>
+                      <td className="py-3 px-4 text-rose-600 font-bold">数十億ドル規模<br/><span className="text-xs font-normal">(起訴額は3.5億ドル)</span></td>
+                      <td className="py-3 px-4 text-gray-600">「マドゥロの資金洗浄人」と呼ばれたA.サーブが、貧困層向けの食料配給（CLAP）において、粗悪な食料を過大請求（水増し）して暴利を得ていたネットワーク。米国で起訴された。</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
+              <h3 className="font-bold text-amber-800 mb-2">💡 分析：失われた金額の「相対的な破壊力」</h3>
+              <p className="text-sm text-amber-900 leading-relaxed">
+                絶対的な金額で見ると、原油価格が1バレル100ドルを超え、国に莫大な現金が溢れていた<strong>チャベス期（外貨統制を利用した約3000億ドルの流出など）が歴史上類を見ない規模</strong>です。この莫大な国富の流出が、後の経済崩壊の土台を作りました。<br/><br/>
+                しかし、<strong>マドゥロ期の「PDVSA-Cripto事件（約210億ドル消失）」の恐ろしさはその「対GDP比」</strong>にあります。2022年〜2023年当時のベネズエラの推定GDPは1000億ドル未満にまで縮小しており、国民が飢え、教師の月給が数ドルという極限状態の中で、<strong>国の経済規模の数分の一に匹敵する売上が少数の仲介者や官僚によって中抜き・消失させられた</strong>ことになります。
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedMenuItem === 'view_military_control') {
+      return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+            <div className="mb-6 border-b border-gray-100 pb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <Crosshair className="text-red-600" />
+                ベネズエラ：軍の政治・経済支配の変遷
+              </h2>
+              <p className="text-gray-600 text-sm md:text-base">閣僚ポストに占める軍人（現役・退役）の割合と、経済支配の拡大</p>
+              <p className="text-xs text-gray-400 mt-2">※NGO「Control Ciudadano」「Transparencia Venezuela」等の調査データに基づく推計</p>
+            </div>
+
+            {/* グラフセクション */}
+            <div className="mb-8 bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-700 mb-2">📊 歴代内閣（閣僚ポスト）に占める軍人の割合推移</h3>
+              <p className="text-sm text-gray-500 mb-6">プントフィホ期の「文民統制」から、チャベス期の「軍民同盟」、そしてマドゥロ期の「軍への過度な依存」への変化が如実に表れています。</p>
+              
+              <div className="w-full h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={militaryCabinetData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="year" tick={{fontSize: 12, fill: '#6b7280'}} tickMargin={10} />
+                    <YAxis tick={{fontSize: 12, fill: '#6b7280'}} tickFormatter={(v) => `${v}%`} domain={[0, 50]} />
+                    <Tooltip 
+                      formatter={(value) => [`約 ${value}%`, '軍人ポストの割合']}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="#475569" 
+                      strokeWidth={3} 
+                      dot={<CustomizedDot />}
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 3つの時代の比較解説セクション */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {/* プントフィホ期 */}
+              <div className="bg-white border border-blue-200 rounded-lg p-5 shadow-sm">
+                <h3 className="font-bold text-lg text-gray-800 mb-2 border-b border-blue-100 pb-2">1️⃣ プントフィホ期<br/><span className="text-sm font-normal text-gray-500">(1958-1998)</span></h3>
+                <p className="text-sm font-semibold text-blue-600 mb-3">【文民統制（シビリアン・コントロール）の時代】</p>
+                <ul className="text-sm text-gray-700 space-y-2 list-disc pl-4">
+                  <li>軍事独裁政権を打倒して成立した体制のため、<strong>軍を意図的に政治から遠ざけました。</strong></li>
+                  <li>内閣における軍人の割合は<strong>平均3〜5%程度</strong>であり、基本的に「国防相」のポストのみが軍人に割り当てられていました。</li>
+                  <li>国営企業や経済活動への軍の関与はほぼゼロでした。</li>
+                </ul>
+              </div>
+
+              {/* チャベス期 */}
+              <div className="bg-white border border-rose-200 rounded-lg p-5 shadow-sm">
+                <h3 className="font-bold text-lg text-gray-800 mb-2 border-b border-rose-100 pb-2">2️⃣ チャベス期<br/><span className="text-sm font-normal text-gray-500">(1999-2013)</span></h3>
+                <p className="text-sm font-semibold text-rose-600 mb-3">【軍民同盟（体制への組み込み）の時代】</p>
+                <ul className="text-sm text-gray-700 space-y-2 list-disc pl-4">
+                  <li>チャベス自身が元陸軍中佐であり、軍を革命の原動力と位置づけました。</li>
+                  <li>内閣の<strong>約25〜30%</strong>に軍人（同志）を登用。内務相やインフラ相など、国防以外の重要ポストにも軍人が進出しました。</li>
+                  <li>与党（PSUV）の州知事候補の半数以上が軍出身者となり、政治の「軍事化」が始まりました。</li>
+                </ul>
+              </div>
+
+              {/* マドゥロ期 */}
+              <div className="bg-white border border-red-200 rounded-lg p-5 shadow-sm">
+                <h3 className="font-bold text-lg text-gray-800 mb-2 border-b border-red-100 pb-2">3️⃣ マドゥロ期<br/><span className="text-sm font-normal text-gray-500">(2013-現在)</span></h3>
+                <p className="text-sm font-semibold text-red-700 mb-3">【軍の覇権と国家コーポラティズムの時代】</p>
+                <ul className="text-sm text-gray-700 space-y-2 list-disc pl-4">
+                  <li>文民出身でカリスマ性のないマドゥロは、政権維持のために軍の支持を金と利権で買う必要がありました。</li>
+                  <li>2017年の危機時には<strong>閣僚の約43%（ピーク時）</strong>を軍人が占めました。</li>
+                  <li>現在、政治だけでなく<strong>「国家の主要産業とインフラ」を軍が合法的に直接支配</strong>しています。</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* マドゥロ期の経済支配の実態 */}
+            <div className="bg-red-50 p-6 rounded-lg border border-red-200">
+              <h3 className="text-xl font-bold text-red-800 mb-4">🏭 マドゥロ期における「軍の経済支配」の具体例</h3>
+              <p className="text-sm text-red-900 mb-6 leading-relaxed">
+                Transparencia Venezuelaの2017〜2020年の調査によると、ベネズエラには約500の国営企業がありますが、そのうち<strong>少なくとも60〜70の最重要国営企業のトップが軍人（現役または退役）</strong>によって占められています。軍はもはや単なる暴力装置ではなく、巨大な「企業グループ」として機能しています。
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white p-5 rounded-lg border border-red-100 shadow-sm">
+                  <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-2"><span className="text-xl">🛢️</span> 石油・鉱業の支配 (CAMIMPEG等)</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">2016年に軍隊直属の石油・鉱業会社<strong>「CAMIMPEG」</strong>が設立され、PDVSA（国営石油）と同等の法的権限が与えられました。また、一時期はPDVSAの総裁自体をマヌエル・ケベド少将が務めました。「オリノコ鉱業弧」の金・ダイヤモンド採掘も軍が管轄しています。</p>
+                </div>
+                <div className="bg-white p-5 rounded-lg border border-red-100 shadow-sm">
+                  <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-2"><span className="text-xl">📦</span> 食料・物流の支配 (GMAS)</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">2016年、パドリーノ・ロペス国防相をトップとする「大ソブリン供給ミッション(GMAS)」が創設され、<strong>港湾、食品工場、流通ネットワークの全権が軍に与えられました。</strong>食料（CLAP）の輸入や配給システムは軍の監視下にあります。</p>
+                </div>
+                <div className="bg-white p-5 rounded-lg border border-red-100 shadow-sm">
+                  <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-2"><span className="text-xl">🚢</span> インフラと公共サービスの支配</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">主要な港湾管理会社（Bolipuertos）、国営航空会社（Conviasa）、さらには電力、水、交通インフラを担当する省庁や企業のトップの多くを軍人が歴任しています。これにより、輸出入の利権を軍が独占しています。</p>
+                </div>
+                <div className="bg-white p-5 rounded-lg border border-red-100 shadow-sm">
+                  <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-2"><span className="text-xl">🏦</span> 軍人専用の金融・ビジネスネットワーク</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">軍人専用の銀行（BanFANB）、軍用車両会社、軍のテレビ局など、少なくとも20以上の軍直属企業が存在し、一般経済が崩壊する中で、軍の将校クラスだけがアクセスできる独立した経済圏が構築されています。</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+
+    // 2. データグラフ（通常指標 または ベネズエラ特化指標）
+    const currentMetric = allMetricsList.find(m => m.id === selectedMenuItem);
+    if (!currentMetric) return null;
+
+    const isVzlaSpecial = selectedMenuItem.startsWith('vzla_');
+    const activeEntities = isVzlaSpecial ? [] : Object.keys(ptsMap[selectedMenuItem] || {});
+    
+    const commonProps = {
+      data: chartData,
+      margin: { top: 10, right: 30, left: 10, bottom: 20 }
+    };
+
+    return (
+      <div className="space-y-6 flex flex-col animate-in fade-in duration-500">
+        <div className="bg-white p-5 md:p-8 rounded-xl shadow-sm border border-gray-200">
+          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                {isVzlaSpecial && <AlertTriangle className="text-amber-500 w-6 h-6" />}
+                {currentMetric.name}
+              </h2>
+              {isVzlaSpecial && (
+                <p className="text-gray-500 text-sm mt-1">
+                  {currentMetric.id === 'vzla_fonden' && '議会の監視を受けない「オフ・バジェット」資金の推移。'}
+                  {currentMetric.id === 'vzla_pdvsa' && '投資不足と熟練工解雇による物理的な生産能力の喪失。'}
+                  {currentMetric.id === 'vzla_hire' && '専門的な官僚機構から政治的忠誠に基づいた組織への変容。'}
+                </p>
+              )}
+            </div>
+            {currentMetric.unit && (
+              <span className="mt-2 md:mt-0 text-xs font-mono bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">
+                Unit: {currentMetric.unit}
+              </span>
+            )}
+          </div>
+          
+          <div className="w-full h-[450px]">
+            {currentMetric.type === 'line' && (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart {...commonProps}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="year" tick={{fill: '#6b7280', fontSize: 12}} tickMargin={12} minTickGap={20} />
+                  <YAxis tickFormatter={(v) => formatYAxis(v, currentMetric.format)} tick={{fill: '#6b7280', fontSize: 12}} width={80} domain={['auto', 'auto']} />
+                  <Tooltip formatter={(v,n,p) => formatTooltip(v,n,p,currentMetric)} labelFormatter={(label) => `${label}年`} contentStyle={{ borderRadius: '8px' }} />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
+                  {activeEntities.map(entityKey => {
+                    const entityDef = allEntities.find(e => e.key === entityKey);
+                    return (
+                      <Line 
+                        key={entityKey} type="monotone" dataKey={`${entityKey}_${selectedMenuItem}`}
+                        name={entityDef.name} stroke={entityDef.color} strokeWidth={2.5} dot={false} activeDot={{ r: 6, strokeWidth: 0 }}
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+
+            {currentMetric.type === 'bar' && (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart {...commonProps}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="year" tick={{fill: '#6b7280', fontSize: 12}} />
+                  <YAxis tickFormatter={(v) => formatYAxis(v, currentMetric.format)} tick={{fill: '#6b7280', fontSize: 12}} />
+                  <Tooltip formatter={(v,n,p) => formatTooltip(v,n,p,currentMetric)} labelFormatter={(y) => `${y}年`} contentStyle={{ borderRadius: '8px' }} />
+                  {renderEventLines()}
+                  <Bar dataKey="vzla_fonden" name="FONDEN支出推移(推定)" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+
+            {currentMetric.type === 'area' && (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart {...commonProps}>
+                  <defs>
+                    <linearGradient id="colorUtil" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="year" tick={{fill: '#6b7280', fontSize: 12}} />
+                  <YAxis domain={[0, 100]} tickFormatter={(v) => formatYAxis(v, currentMetric.format)} tick={{fill: '#6b7280', fontSize: 12}} />
+                  <Tooltip formatter={(v,n,p) => formatTooltip(v,n,p,currentMetric)} labelFormatter={(y) => `${y}年`} contentStyle={{ borderRadius: '8px' }} />
+                  {renderEventLines()}
+                  <Area type="monotone" dataKey="vzla_pdvsa" name="精製/生産稼働率" stroke="#ef4444" fillOpacity={1} fill="url(#colorUtil)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+
+            {currentMetric.type === 'stacked_area' && (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart {...commonProps}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="year" tick={{fill: '#6b7280', fontSize: 12}} />
+                  <YAxis domain={[0, 100]} tickFormatter={(v) => formatYAxis(v, currentMetric.format)} tick={{fill: '#6b7280', fontSize: 12}} />
+                  <Tooltip formatter={(v,n,p) => formatTooltip(v,n,p,currentMetric)} labelFormatter={(y) => `${y}年`} contentStyle={{ borderRadius: '8px' }} />
+                  <Legend />
+                  {renderEventLines()}
+                  <Area stackId="1" dataKey="vzla_regular" name="正規官僚機構(%)" stroke="#10b981" fill="#10b981" fillOpacity={0.5} />
+                  <Area stackId="1" dataKey="vzla_mission" name="ミッション/政治雇用(%)" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.5} />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {isVzlaSpecial && (
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-gray-500">
+              <span className="font-mono bg-gray-100 border border-gray-200 px-2 py-1 rounded">
+                縦線＝重要年（制度イベント）
+              </span>
+              {VZLA_EVENTS.map((e) => (
+                <span key={e.year} className="font-mono bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">
+                  {e.label}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {isVzlaSpecial && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-amber-50 border border-amber-200 p-5 rounded-xl">
+              <h4 className="flex items-center gap-2 text-amber-700 font-bold mb-2">
+                <Info size={16} /> 証拠能力の解説
+              </h4>
+              <p className="text-sm text-amber-900 leading-relaxed">
+                {currentMetric.id === 'vzla_fonden' && 'FONDENは石油収入を直接大統領府の管理下に移転させる仕組みでした。ピーク期には国家予算に匹敵する規模の支出が監視外で行われ、制度的腐敗を加速させたと解釈できます。'}
+                {currentMetric.id === 'vzla_pdvsa' && '2003年の大量解雇以降、稼働率は低下傾向。2014年以降の急落は、制裁ショック以前から蓄積していた投資不足・保全放棄が物理的制約に達した可能性を示唆します。'}
+                {currentMetric.id === 'vzla_hire' && '「ミッション（Misiones）」は省庁をバイパスして設立され、専門官僚制より政治忠誠にもとづく資源配分へ傾斜。公的サービスが恩顧主義の装置へ変容した過程を読み取れます。'}
+              </p>
+            </div>
+
+            <div className="bg-white border border-gray-200 p-5 rounded-xl shadow-sm flex flex-col justify-center">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600 font-medium">体制の維持コスト</span>
+                  <span className="text-red-600 font-bold">極めて高い</span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-red-500 w-[85%] rounded-full shadow-sm" />
+                </div>
+
+                <div className="flex justify-between items-center text-sm mt-4">
+                  <span className="text-gray-600 font-medium">インフラの回復可能性</span>
+                  <span className="text-blue-600 font-bold">長期（15年+）</span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 w-[20%] rounded-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     );
-  }
-  .header-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--red);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 4vw, 52px);
-    font-weight: 900;
-    line-height: 1.1;
-    color: #f0ece4;
-    position: relative;
-  }
-  header h1 span {
-    color: var(--red);
-  }
-  .header-sub {
-    margin-top: 14px;
-    font-size: 14px;
-    color: var(--text-dim);
-    font-style: italic;
-    max-width: 700px;
-    position: relative;
-  }
-  .era-badges {
-    display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;
-    position: relative;
-  }
-  .era-badge {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    padding: 5px 14px;
-    border-radius: 2px;
-    letter-spacing: 1px;
-  }
-  .era-badge.chavez { background: var(--red); color: #fff; }
-  .era-badge.maduro { background: var(--blue); color: #c8daea; }
-  .era-badge.note { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+  };
 
-  /* ── LAYOUT ───────────────────────────── */
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
-  }
-
-  /* ── SECTION TITLE ────────────────────── */
-  .section-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* ── IDEOLOGY BOX ─────────────────────── */
-  .ideology-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    margin-bottom: 48px;
-    border: 1px solid var(--border);
-  }
-  .ideology-card {
-    padding: 28px 28px 24px;
-    position: relative;
-  }
-  .ideology-card.chavez-card { background: #160d0c; }
-  .ideology-card.maduro-card { background: #0b1320; }
-  .ideology-card .era-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .ideology-card.chavez-card .era-name { color: #e05545; }
-  .ideology-card.maduro-card .era-name { color: #4d8cc0; }
-  .ideology-card .era-years {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-bottom: 14px;
-  }
-  .ideology-card .ideology-desc {
-    font-size: 13.5px;
-    color: #a09a92;
-    line-height: 1.75;
-  }
-  .ideology-card .ideology-slogan {
-    margin-top: 14px;
-    font-style: italic;
-    font-size: 13px;
-    color: var(--text-dim);
-    border-left: 2px solid var(--border);
-    padding-left: 12px;
-  }
-
-  /* ── PARTICIPATION LAYER ──────────────── */
-  .layer-section { margin-bottom: 56px; }
-
-  .flow-diagram {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 32px;
-    position: relative;
-  }
-
-  /* Central power node */
-  .power-node {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    margin-bottom: 32px;
-  }
-  .power-box {
-    background: var(--red);
-    color: #fff;
-    padding: 16px 36px;
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    font-weight: 700;
-    text-align: center;
-    position: relative;
-    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
-  }
-  .power-box.maduro-box { background: var(--blue); }
-
-  /* Arrow down */
-  .arrow-down {
-    display: flex;
-    justify-content: center;
-    margin: 0 0 24px;
-    color: var(--text-muted);
-    font-size: 22px;
-    letter-spacing: -4px;
-  }
-  .arrow-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    text-align: center;
-    margin-top: -16px;
-    margin-bottom: 24px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  /* Mechanism grid */
-  .mechanism-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2px;
-    margin-bottom: 24px;
-  }
-  .mech-card {
-    background: var(--surface2);
-    padding: 18px 16px;
-    border-top: 3px solid var(--border);
-    transition: border-color .2s;
-    cursor: default;
-  }
-  .mech-card:hover { border-top-color: var(--red); }
-  .mech-card.maduro-mech:hover { border-top-color: var(--blue); }
-  .mech-card .mech-name {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--red);
-    margin-bottom: 6px;
-    letter-spacing: .5px;
-  }
-  .mech-card.maduro-mech .mech-name { color: #4d8cc0; }
-  .mech-card .mech-title {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #ccc8c0;
-    margin-bottom: 6px;
-    line-height: 1.3;
-  }
-  .mech-card .mech-desc {
-    font-size: 12px;
-    color: #706a62;
-    line-height: 1.6;
-  }
-
-  /* ── DUAL-USE BOX ─────────────────────── */
-  .dual-section { margin-bottom: 56px; }
-
-  .dual-grid {
-    display: grid;
-    grid-template-columns: 1fr 60px 1fr;
-    gap: 0;
-    align-items: stretch;
-  }
-  .dual-col {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 24px;
-  }
-  .dual-col.participation { border-right: none; }
-  .dual-col.control { border-left: none; }
-  .dual-divider {
-    background: var(--surface2);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    writing-mode: vertical-rl;
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-  }
-  .dual-col-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-  .dual-col.participation .dual-col-title { color: #4ade80; }
-  .dual-col.control .dual-col-title { color: var(--red); }
-
-  .dual-item {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 14px;
-    align-items: flex-start;
-  }
-  .dual-item .di-icon {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px;
-    margin-top: 2px;
-  }
-  .dual-col.participation .di-icon { background: #14532d; color: #4ade80; }
-  .dual-col.control .di-icon { background: var(--red-dim); color: #f87171; }
-  .dual-item .di-text {
-    font-size: 13px;
-    color: #a09a92;
-    line-height: 1.6;
-  }
-  .dual-item .di-text strong { color: var(--text); }
-
-  /* ── COMPARISON TABLE ─────────────────── */
-  .compare-section { margin-bottom: 56px; }
-
-  .compare-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  .compare-table th {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 2px solid var(--border);
-  }
-  .compare-table th:nth-child(1) { color: var(--text-dim); width: 22%; }
-  .compare-table th:nth-child(2) { color: #e05545; width: 39%; background: rgba(192,57,43,.07); }
-  .compare-table th:nth-child(3) { color: #4d8cc0; width: 39%; background: rgba(44,111,173,.07); }
-  .compare-table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-    color: #a09a92;
-    line-height: 1.6;
-  }
-  .compare-table td:nth-child(2) { background: rgba(192,57,43,.04); }
-  .compare-table td:nth-child(3) { background: rgba(44,111,173,.04); }
-  .compare-table td:nth-child(1) {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    font-weight: 700;
-  }
-  .compare-table tr:last-child td { border-bottom: none; }
-
-  /* ── PYRAMID DIAGRAM ──────────────────── */
-  .pyramid-section { margin-bottom: 56px; }
-  .pyramid-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 40px 32px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-  }
-  .pyramid-level {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    max-width: 700px;
-    margin-bottom: 2px;
-    position: relative;
-  }
-  .pyramid-bar {
-    height: 46px;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #fff;
-    white-space: nowrap;
-    clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 12px 100%);
-  }
-  .pyramid-bar-label {
-    margin-left: 16px;
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.5;
-  }
-  .pyr-l1 { width: 28%; background: #7d1f16; }
-  .pyr-l2 { width: 45%; background: #a62417; }
-  .pyr-l3 { width: 62%; background: #b8341e; }
-  .pyr-l4 { width: 78%; background: #c94228; }
-  .pyr-l5 { width: 94%; background: #d95535; }
-  .pyramid-note {
-    margin-top: 20px;
-    font-size: 12px;
-    color: var(--text-muted);
-    font-style: italic;
-    text-align: center;
-    max-width: 600px;
-  }
-
-  /* ── CONTROL MECHANISMS (Maduro) ──────── */
-  .control-chain {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-bottom: 24px;
-  }
-  .chain-node {
-    background: var(--surface2);
-    border-left: 3px solid var(--blue);
-    padding: 14px 18px;
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-  }
-  .chain-node.highlight-node { background: #0d1a2a; border-left-color: #e05545; }
-  .chain-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--blue);
-    flex-shrink: 0;
-    line-height: 1;
-    width: 30px;
-  }
-  .chain-node.highlight-node .chain-num { color: #e05545; }
-  .chain-content .chain-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #ccc8c0;
-    margin-bottom: 4px;
-  }
-  .chain-content .chain-desc {
-    font-size: 12.5px;
-    color: #706a62;
-    line-height: 1.65;
-  }
-  .chain-arrow {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 18px;
-    padding: 4px 0;
-  }
-
-  /* ── FOOTER ───────────────────────────── */
-  footer {
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-    padding: 28px 40px;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    display: flex;
-    gap: 32px;
-    flex-wrap: wrap;
-    letter-spacing: .5px;
-  }
-  footer span { color: var(--text-dim); }
-
-  /* ── RESPONSIVE ───────────────────────── */
-  @media (max-width: 700px) {
-    .ideology-grid { grid-template-columns: 1fr; }
-    .dual-grid { grid-template-columns: 1fr; }
-    .dual-divider { writing-mode: horizontal-tb; height: 32px; width: 100%; border: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .dual-col.participation { border-right: 1px solid var(--border); }
-    .dual-col.control { border-left: 1px solid var(--border); }
-    header { padding: 32px 20px 24px; }
-    .container { padding: 24px 16px 60px; }
-    footer { padding: 20px; }
-  }
-
-  /* ── ANIMATE ──────────────────────────── */
-  .fade-in {
-    opacity: 0;
-    transform: translateY(16px);
-    animation: fadeIn .5s ease forwards;
-  }
-  @keyframes fadeIn {
-    to { opacity: 1; transform: none; }
-  }
-  .mech-card { animation: fadeIn .4s ease forwards; }
-  .mech-card:nth-child(1) { animation-delay: .05s; }
-  .mech-card:nth-child(2) { animation-delay: .10s; }
-  .mech-card:nth-child(3) { animation-delay: .15s; }
-  .mech-card:nth-child(4) { animation-delay: .20s; }
-  .mech-card:nth-child(5) { animation-delay: .25s; }
-  .mech-card:nth-child(6) { animation-delay: .30s; }
-
-  .tag {
-    display: inline-block;
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 2px;
-    margin-bottom: 6px;
-  }
-  .tag.legitimate { background: #14532d; color: #4ade80; }
-  .tag.ambiguous  { background: #713f12; color: #fbbf24; }
-  .tag.repressive { background: var(--red-dim); color: #f87171; }
-</style>
-</head>
-<body>
-
-<!-- ═══════ HEADER ═══════ -->
-<header>
-  <div class="header-label">政治構造分析 / Political Structure Analysis</div>
-  <h1>ベネズエラ：<span>住民参加</span>と支配構造</h1>
-  <p class="header-sub">
-    チャベス・マドゥロ両政権期における「参加型民主主義」の制度設計と、
-    それが権力維持装置へと変容するメカニズムの図式的分析
-  </p>
-  <div class="era-badges">
-    <span class="era-badge chavez">チャベス期 1999–2013</span>
-    <span class="era-badge maduro">マドゥロ期 2013–現在</span>
-    <span class="era-badge note">※ モック・学術分析用途</span>
-  </div>
-</header>
-
-<div class="container">
-
-  <!-- ═══════ 1. 両政権の思想的基盤 ═══════ -->
-  <div class="section-title">01 &mdash; 思想的基盤</div>
-  <div class="ideology-grid fade-in" style="animation-delay:.1s">
-    <div class="ideology-card chavez-card">
-      <div class="era-name">Hugo Chávez</div>
-      <div class="era-years">1999 — 2013</div>
-      <div class="ideology-desc">
-        「ボリバル革命」を掲げ、19世紀の独立英雄シモン・ボリバルの理念を現代に再解釈。
-        新自由主義・米国帝国主義への対抗として<strong>「21世紀の社会主義（Socialismo del Siglo XXI）」</strong>を提唱。
-        石油収入を財源とするミッション制度で大衆の直接支持を組織化した。
-        参加型民主主義は、旧来のエリート政党（AD・COPEI）を解体する正統性の根拠として機能した。
-      </div>
-      <div class="ideology-slogan">
-        "Con Chávez manda el pueblo" —— 「チャベスとともに、人民が統治する」
-      </div>
-    </div>
-    <div class="ideology-card maduro-card">
-      <div class="era-name">Nicolás Maduro</div>
-      <div class="era-years">2013 — 現在</div>
-      <div class="ideology-desc">
-        チャベスの「精神的後継者」を自称するが、石油価格暴落・経済崩壊という文脈で政権を引き継ぐ。
-        参加型制度の<strong>「形式的存続・実質的変質」</strong>が進行。
-        食料配給（CLAP）・民兵（コレクティボス）・制憲議会を通じて、参加の概念を
-        恩顧主義と監視の道具へと転換させた。
-      </div>
-      <div class="ideology-slogan">
-        "Chávez vive, la lucha sigue" —— 「チャベスは生きている、闘争は続く」
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ 2. チャベス期の参加装置 ═══════ -->
-  <div class="layer-section fade-in" style="animation-delay:.2s">
-    <div class="section-title">02 &mdash; チャベス期：参加型制度の設計（1999–2013）</div>
-    <div class="flow-diagram">
-      <div class="power-node">
-        <div class="power-box">大統領府 / PSUV党 —— 石油収入（PDVSA）</div>
-      </div>
-      <div class="arrow-down">↓↓↓</div>
-      <div class="arrow-label">資源・権限・正統性の垂直配分</div>
-      <div class="mechanism-grid">
-        <div class="mech-card">
-          <span class="tag legitimate">参加的</span>
-          <div class="mech-name">CONSEJOS COMUNALES</div>
-          <div class="mech-title">コムナル評議会（2006–）</div>
-          <div class="mech-desc">
-            200〜400世帯単位で組織される住民自治体。議会・地方政府を迂回し
-            大統領府から直接資金を受領。名目上は住民による直接民主主義の実践単位。
-          </div>
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight flex items-center gap-2">
+            <Globe className="text-blue-600" /> 石油レンティア国家の政治経済学
+          </h1>
+          <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest font-bold">開発、独裁、そして国家の解体への道程</p>
         </div>
-        <div class="mech-card">
-          <span class="tag legitimate">参加的</span>
-          <div class="mech-name">MISIONES SOCIALES</div>
-          <div class="mech-title">社会ミッション群（2003–）</div>
-          <div class="mech-desc">
-            識字（ミシオン・ロビンソン）、医療（バリオ・アデントロ）、食料（メルカル）など。
-            省庁を迂回して大統領直轄で展開。社会サービスと政治動員を一体化。
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
+          
+          {/* 左側：縦長メニュー（クリックで開閉可能なアコーディオン形式） */}
+          <div className="lg:col-span-1 space-y-4">
+            {MENU_GROUPS.map((group, groupIdx) => {
+              const isOpen = openGroups[groupIdx];
+              return (
+                <div key={groupIdx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300">
+                  
+                  {/* メインメニューのヘッダー */}
+                  <div 
+                    onClick={() => toggleGroup(groupIdx)}
+                    className="p-4 cursor-pointer bg-white hover:bg-gray-50 transition-colors flex justify-between items-center"
+                  >
+                    <h2 className="font-extrabold text-sm text-gray-800 uppercase tracking-widest">
+                      {group.title}
+                    </h2>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180 text-blue-600' : 'text-gray-400'}`} />
+                  </div>
+                  
+                  {/* サブメニュー */}
+                  <div className={`${isOpen ? 'block' : 'hidden'} bg-white px-3 pb-3 pt-1 space-y-1 border-t border-gray-50`}>
+                    {group.items.map(item => {
+                      const isSpecial = group.title === "深層分析：ベネズエラ";
+                      const isSelected = selectedMenuItem === item.id;
+                      return (
+                        <button 
+                          key={item.id}
+                          onClick={() => setSelectedMenuItem(item.id)}
+                          className={`w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                            isSelected 
+                              ? (isSpecial ? 'bg-amber-100 text-amber-800 font-bold border-l-4 border-amber-500' : 'bg-blue-50 text-blue-700 font-bold border-l-4 border-blue-600')
+                              : 'hover:bg-gray-100 text-gray-600 border-l-4 border-transparent'
+                          }`}
+                        >
+                          {item.icon && <span className={isSelected ? (isSpecial ? "text-amber-700" : "text-blue-600") : "text-gray-400"}>{item.icon}</span>}
+                          {isSpecial && !item.icon && <AlertTriangle className="w-4 h-4 text-amber-500 opacity-70" />}
+                          <span className="truncate">{item.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            
+            <div className="p-4 bg-gray-100 rounded-xl border border-gray-200 text-xs text-gray-500 leading-relaxed mt-8">
+              <strong>免責事項：</strong><br/>
+              各グラフは、世銀・IMF等の統計や歴史的転換点を基に生成された<strong>推計シミュレーション</strong>です。
+            </div>
           </div>
-        </div>
-        <div class="mech-card">
-          <span class="tag ambiguous">両義的</span>
-          <div class="mech-name">PSUV / UBEs</div>
-          <div class="mech-title">党基礎ユニット（2007–）</div>
-          <div class="mech-desc">
-            統一社会主義党の末端細胞。街区・職場単位で組織化。
-            選挙動員・世論把握と、住民間の政治的コントロールの双方を担う。
+          
+          {/* 右側：コンテンツ（レポート または グラフ） */}
+          <div className="lg:col-span-3">
+            {renderContent()}
           </div>
-        </div>
-        <div class="mech-card">
-          <span class="tag ambiguous">両義的</span>
-          <div class="mech-name">FONDEN</div>
-          <div class="mech-title">国家開発基金（2005–）</div>
-          <div class="mech-desc">
-            石油収入の一部を議会審査なく大統領府管轄の「オフ・バジェット」基金へ。
-            ミッション財源として大量動員を可能にしたが、透明性ゼロ。
-          </div>
-        </div>
-        <div class="mech-card">
-          <span class="tag ambiguous">両義的</span>
-          <div class="mech-name">MILICIAS BOLIVARIANAS</div>
-          <div class="mech-title">ボリバル民兵（2008–）</div>
-          <div class="mech-desc">
-            正規軍と並立する市民武装組織。参加型防衛の名目だが、
-            チャベス支持者による武装勢力として国内政治圧力にも機能。
-          </div>
-        </div>
-        <div class="mech-card">
-          <span class="tag legitimate">参加的</span>
-          <div class="mech-name">CONSTITUCIÓN 1999</div>
-          <div class="mech-title">1999年憲法</div>
-          <div class="mech-desc">
-            直接民主主義・住民参加を多数条文で明記。リコール制度・住民立法など。
-            しかし制度的独立性（司法・選挙委員会）は政権与党の支配下に置かれた。
-          </div>
+          
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- ═══════ 3. 参加と統制の両義性 ═══════ -->
-  <div class="dual-section fade-in" style="animation-delay:.25s">
-    <div class="section-title">03 &mdash; 制度の「両面性」：住民参加 vs. 支配装置</div>
-    <div class="dual-grid">
-      <div class="dual-col participation">
-        <div class="dual-col-title">▲ 住民参加の側面</div>
-        <div class="dual-item">
-          <div class="di-icon">✓</div>
-          <div class="di-text"><strong>排除されていた層の包摂：</strong>貧困層・先住民・女性が初めて政治主体として制度に組み込まれた</div>
-        </div>
-        <div class="dual-item">
-          <div class="di-icon">✓</div>
-          <div class="di-text"><strong>サービス実績：</strong>識字率向上・乳幼児死亡率低下・貧困率減少が実測された（2000年代）</div>
-        </div>
-        <div class="dual-item">
-          <div class="di-icon">✓</div>
-          <div class="di-text"><strong>直接的意思決定：</strong>コムナル評議会での予算審議は、形式上は住民総会で実施</div>
-        </div>
-        <div class="dual-item">
-          <div class="di-icon">✓</div>
-          <div class="di-text"><strong>憲法的権利の拡充：</strong>社会権・参加権が1999年憲法に明記された</div>
-        </div>
-      </div>
-      <div class="dual-divider">転換 / Inversion</div>
-      <div class="dual-col control">
-        <div class="dual-col-title">▼ 支配構造の側面</div>
-        <div class="dual-item">
-          <div class="di-icon">✗</div>
-          <div class="di-text"><strong>恩顧主義の制度化：</strong>サービス受給が政治的忠誠と連動。反対者はリストから排除（リスタ・タスコン問題）</div>
-        </div>
-        <div class="dual-item">
-          <div class="di-icon">✗</div>
-          <div class="di-text"><strong>水平的制度の空洞化：</strong>議会・司法・地方政府を迂回することで牽制機能が解体</div>
-        </div>
-        <div class="dual-item">
-          <div class="di-icon">✗</div>
-          <div class="di-text"><strong>垂直統合：</strong>コムナル評議会は形式的住民自治だが、資金源・人事・議題設定は党中央が支配</div>
-        </div>
-        <div class="dual-item">
-          <div class="di-icon">✗</div>
-          <div class="di-text"><strong>監視と分断：</strong>街区単位の党組織が住民の政治行動を把握。反対者への社会的圧力を可能にした</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ 4. マドゥロ期の変質 ═══════ -->
-  <div class="layer-section fade-in" style="animation-delay:.3s">
-    <div class="section-title">04 &mdash; マドゥロ期：統制への傾斜（2013–現在）</div>
-    <div class="flow-diagram">
-      <div class="power-node">
-        <div class="power-box maduro-box">大統領府 —— FANB（軍）—— コレクティボス（民兵）</div>
-      </div>
-      <div class="arrow-down">↓↓↓</div>
-      <div class="arrow-label">食料・暴力・情報を通じた統制</div>
-      <div class="mechanism-grid">
-        <div class="mech-card maduro-mech">
-          <span class="tag repressive">統制的</span>
-          <div class="mech-name">CLAP</div>
-          <div class="mech-title">食料配給委員会（2016–）</div>
-          <div class="mech-desc">
-            食料不足の中、月1回の食料箱配給を党登録者優先で実施。
-            「食べるために党員でいる」状況を創出。最も直接的な生存依存型統制。
-          </div>
-        </div>
-        <div class="mech-card maduro-mech">
-          <span class="tag repressive">統制的</span>
-          <div class="mech-name">COLECTIVOS</div>
-          <div class="mech-title">武装コレクティボス</div>
-          <div class="mech-desc">
-            親政府の武装民間組織。反政府デモへの暴力的鎮圧・反対意見の住民への
-            圧力に使用。「公式には非公式」の暴力装置。
-          </div>
-        </div>
-        <div class="mech-card maduro-mech">
-          <span class="tag repressive">統制的</span>
-          <div class="mech-name">ASAMBLEA CONSTITUYENTE</div>
-          <div class="mech-title">制憲議会（2017–）</div>
-          <div class="mech-desc">
-            野党多数の国民議会を無力化するため召集。「人民参加」の名目だが、
-            議員は全員政権与党側から選出。憲法上の立法機関を事実上代替。
-          </div>
-        </div>
-        <div class="mech-card maduro-mech">
-          <span class="tag repressive">統制的</span>
-          <div class="mech-name">CARNET DE LA PATRIA</div>
-          <div class="mech-title">祖国カード（2017–）</div>
-          <div class="mech-desc">
-            政府サービス・補助金受給に必要なIDカード。所持者の行動・政治参加を
-            デジタルで追跡。中国の技術支援により構築された監視基盤。
-          </div>
-        </div>
-        <div class="mech-card maduro-mech">
-          <span class="tag ambiguous">両義的</span>
-          <div class="mech-name">COMUNAS</div>
-          <div class="mech-title">コムナ（コムナル評議会の上位）</div>
-          <div class="mech-desc">
-            複数評議会を統合した広域自治体。チャベスの「コムナル国家」構想の継続。
-            ただし独立性は低く、党の地域管理組織として機能。
-          </div>
-        </div>
-        <div class="mech-card maduro-mech">
-          <span class="tag repressive">統制的</span>
-          <div class="mech-name">SEBIN / DGCIM</div>
-          <div class="mech-title">情報機関による弾圧</div>
-          <div class="mech-desc">
-            国家情報局・対情報軍事局が反政府活動家・ジャーナリスト・軍人を拘束。
-            「参加」した反対者への制度的報復機能を担う。
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ 5. 支配構造の連鎖 ═══════ -->
-  <div class="layer-section fade-in" style="animation-delay:.32s">
-    <div class="section-title">05 &mdash; マドゥロ期：統制連鎖の構造</div>
-    <div class="control-chain">
-      <div class="chain-node">
-        <div class="chain-num">1</div>
-        <div class="chain-content">
-          <div class="chain-title">経済崩壊による依存の創出</div>
-          <div class="chain-desc">石油価格暴落（2014年）・経済制裁・政策失敗によるハイパーインフレ。国民が日常的生存を政府サービスに依存する状況を構造的に維持。</div>
-        </div>
-      </div>
-      <div class="chain-arrow">↓</div>
-      <div class="chain-node">
-        <div class="chain-num">2</div>
-        <div class="chain-content">
-          <div class="chain-title">CLAP食料箱による忠誠の購入</div>
-          <div class="chain-desc">月次の食料配給を党登録・政治行動と連動。「祖国カード」でスキャンされた受給者リストは政治的ふるい分けに使用可能。</div>
-        </div>
-      </div>
-      <div class="chain-arrow">↓</div>
-      <div class="chain-node">
-        <div class="chain-num">3</div>
-        <div class="chain-content">
-          <div class="chain-title">街区レベルの監視と社会的圧力</div>
-          <div class="chain-desc">コムナル評議会・PSUV基礎ユニットが住民の日常行動を把握。反対票・抗議参加は近隣コミュニティを通じて可視化される。</div>
-        </div>
-      </div>
-      <div class="chain-arrow">↓</div>
-      <div class="chain-node highlight-node">
-        <div class="chain-num">4</div>
-        <div class="chain-content">
-          <div class="chain-title">コレクティボスによる物理的威嚇</div>
-          <div class="chain-desc">抗議・組織活動に対し武装民間組織が介入。警察・軍との暗黙の分業体制により、国家は直接的弾圧の「距離」を保ちながら暴力を行使。</div>
-        </div>
-      </div>
-      <div class="chain-arrow">↓</div>
-      <div class="chain-node">
-        <div class="chain-num">5</div>
-        <div class="chain-content">
-          <div class="chain-title">制度的出口の封鎖</div>
-          <div class="chain-desc">選挙委員会（CNE）・最高裁（TSJ）・制憲議会が与党支配下に置かれ、選挙・司法による権力交代の経路が実質的に遮断される。</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ 6. 比較表 ═══════ -->
-  <div class="compare-section fade-in" style="animation-delay:.35s">
-    <div class="section-title">06 &mdash; チャベス vs. マドゥロ：参加型制度の変容</div>
-    <div style="overflow-x:auto">
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>比較軸</th>
-          <th>チャベス期（1999–2013）</th>
-          <th>マドゥロ期（2013–現在）</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>参加の動機</td>
-          <td>革命的熱狂・石油ブームによる利益分配への期待</td>
-          <td>生存への脅威（食料・医療・安全）による強制的参加</td>
-        </tr>
-        <tr>
-          <td>資源の源泉</td>
-          <td>石油高騰期の豊富なオイルマネー（FONDENを通じ）</td>
-          <td>希少化した食料・ドル・輸入品の配分権</td>
-        </tr>
-        <tr>
-          <td>統制の手段</td>
-          <td>恩顧主義・情報・社会的圧力（リスタ・タスコン）</td>
-          <td>食料依存（CLAP）・デジタル監視（祖国カード）・武力（コレクティボス）</td>
-        </tr>
-        <tr>
-          <td>制度の外観</td>
-          <td>参加型民主主義として国際的に議論・一部から称賛</td>
-          <td>外観は維持しつつ、実質的には権威主義体制として国際社会が認定</td>
-        </tr>
-        <tr>
-          <td>反対勢力への対応</td>
-          <td>排除・差別（リスタ掲載）・一部的な弾圧</td>
-          <td>投獄・拷問・亡命強制・選挙無効化などの組織的弾圧</td>
-        </tr>
-        <tr>
-          <td>軍との関係</td>
-          <td>政治的に中立化・制度統合</td>
-          <td>軍が経済利権（麻薬・食料輸入）を担い、政権の中核的支柱に</td>
-        </tr>
-        <tr>
-          <td>国際社会の評価</td>
-          <td>「選挙的権威主義」から「参加型民主主義」まで論争的</td>
-          <td>大多数の民主主義指標で「権威主義体制」と分類</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
-
-  <!-- ═══════ 7. 権力ピラミッド ═══════ -->
-  <div class="pyramid-section fade-in" style="animation-delay:.4s">
-    <div class="section-title">07 &mdash; マドゥロ期の権力構造ピラミッド</div>
-    <div class="pyramid-wrap">
-      <div class="pyramid-level">
-        <div class="pyramid-bar pyr-l1" style="margin: 0 auto">大統領府・核心部</div>
-      </div>
-      <div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 2px 0">FANB軍幹部 / 情報機関 / 麻薬ルート利権グループ</div>
-      <div class="pyramid-level">
-        <div class="pyramid-bar pyr-l2" style="margin: 0 auto">PSUV党指導部 / 制憲議会</div>
-      </div>
-      <div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 2px 0">忠誠派テクノクラート / 国営企業経営陣</div>
-      <div class="pyramid-level">
-        <div class="pyramid-bar pyr-l3" style="margin: 0 auto">コレクティボス / CLAP配給委員会</div>
-      </div>
-      <div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 2px 0">街区レベルの監視・配給管理・動員装置</div>
-      <div class="pyramid-level">
-        <div class="pyramid-bar pyr-l4" style="margin: 0 auto">コムナル評議会 / PSUV基礎ユニット</div>
-      </div>
-      <div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 2px 0">住民の政治行動把握・社会圧力の末端実行</div>
-      <div class="pyramid-level">
-        <div class="pyramid-bar pyr-l5" style="margin: 0 auto">一般住民（祖国カード保持者）</div>
-      </div>
-      <div class="pyramid-note">
-        ※ 「住民参加」の制度は末端2層に集中するが、意思決定・資源配分は上位層が掌握。
-        形式的参加と実質的支配の乖離が構造的特徴。
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ 8. 学術的解釈 ═══════ -->
-  <div class="fade-in" style="animation-delay:.45s">
-    <div class="section-title">08 &mdash; 主要な学術的解釈フレーム</div>
-    <div class="mechanism-grid">
-      <div class="mech-card" style="border-top-color: #4ade80">
-        <div class="mech-name" style="color:#4ade80">STEVEN LEVITSKY</div>
-        <div class="mech-title">「競争的権威主義」</div>
-        <div class="mech-desc">選挙・議会・裁判所といった民主制度が形式上は存在するが、権力者が不均等に優位を持つ体制。ベネズエラはその典型例として分析される。</div>
-      </div>
-      <div class="mech-card" style="border-top-color: #fbbf24">
-        <div class="mech-name" style="color:#fbbf24">KIRK HAWKINS</div>
-        <div class="mech-title">「ポピュリスト・リンケージ」</div>
-        <div class="mech-desc">チャベスは制度的媒介なしに指導者と大衆が直結する「プログラマティック外」の動員を行い、制度の空洞化と個人的忠誠の強化を同時に達成。</div>
-      </div>
-      <div class="mech-card" style="border-top-color: #60a5fa">
-        <div class="mech-name" style="color:#60a5fa">JUAN LINZ</div>
-        <div class="mech-title">「権威主義体制の類型論」</div>
-        <div class="mech-desc">マドゥロ期は「スルタン主義的権威主義」への傾斜として分析可能。個人的裁量・家産制的支配・恐怖と利益の混合による大衆コントロール。</div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ═══════ FOOTER ═══════ -->
-<footer>
-  <div>分析対象期間：<span>1999–2025年</span></div>
-  <div>分類：<span>比較政治学 / 権威主義研究 / ラテンアメリカ研究</span></div>
-  <div>参考：<span>World Bank / Freedom House / ENCOVI / Human Rights Watch / 学術文献</span></div>
-  <div>注記：<span>本図はモック・教育目的の分析用途。統計値は別途公式資料で確認のこと</span></div>
-</footer>
-
-</body>
-</html>
+  );
+}
